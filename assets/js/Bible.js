@@ -8,6 +8,11 @@ import AppError from "./AppError";
 import AppLoading from "./AppLoading";
 import updateHistory from "./updateHistory";
 import getAppropriateBook from "./getAppropriateBook";
+import SelectionGrid from "./SelectionGrid";
+import ComparisonGrid from "./ComparisonGrid";
+import BottomNavigation from "./BottomNavigation";
+import useSwipeNavigation from "./useSwipeNavigation";
+import FontSizeControl from "./FontSizeControl";
 
 const Bible = ({ intl, setLocale }) => {
     const [error, setError] = useState(null);
@@ -15,6 +20,8 @@ const Bible = ({ intl, setLocale }) => {
     const [isTranslationsLoading, setIsTranslationsLoading] = useState(true);
     const [isStructureLoading, setIsStructureLoading] = useState(true);
     const [showVerses, setShowVerses] = useState(false);
+    const [isSelectionOpen, setIsSelectionOpen] = useState(false);
+    const [comparedVerse, setComparedVerse] = useState(null);
 
     // Note: It contains all books available - not only translation specific
     const [books, setBooks] = useState([]);
@@ -30,6 +37,23 @@ const Bible = ({ intl, setLocale }) => {
     const [selectedChapter, setSelectedChapter] = useState(
         getDataFromCurrentPathname().chapter
     );
+
+    useEffect(() => {
+        // Jeśli użytkownik wchodzi na stronę główną (ścieżka /), otwórz wybór ksiąg
+        if (window.location.pathname === "/" || window.location.pathname === "") {
+            setIsSelectionOpen(true);
+        }
+
+        const handlePopState = () => {
+            const data = getDataFromCurrentPathname();
+            setSelectedTranslation(data.translation);
+            setSelectedBook(data.book);
+            setSelectedChapter(data.chapter);
+        };
+
+        window.addEventListener("popstate", handlePopState);
+        return () => window.removeEventListener("popstate", handlePopState);
+    }, []);
 
     const keepChapterIfPossible = useRef(false);
     const startFromLastVerse = useRef(false);
@@ -106,13 +130,13 @@ const Bible = ({ intl, setLocale }) => {
 
         fetch(
             "/api/" +
-                locale +
-                "/translation/" +
-                selectedTranslation +
-                "/book/" +
-                selectedBook +
-                "/chapter/" +
-                newSelectedChapter
+            locale +
+            "/translation/" +
+            selectedTranslation +
+            "/book/" +
+            selectedBook +
+            "/chapter/" +
+            newSelectedChapter
         )
             .then((res) => res.json())
             .then(
@@ -194,7 +218,7 @@ const Bible = ({ intl, setLocale }) => {
         return (
             !isStructureLoading &&
             typeof structure[Object.keys(structure)[getBookIndex() + 1]] !==
-                "undefined"
+            "undefined"
         );
     };
 
@@ -265,6 +289,16 @@ const Bible = ({ intl, setLocale }) => {
         }
     }, [isBooksLoading, isTranslationsLoading, selectedTranslation]);
 
+    // Swipe navigation - disabled when overlays are open
+    useSwipeNavigation(
+        nextChapter,  // Swipe left -> next chapter
+        prevChapter,  // Swipe right -> previous chapter
+        {
+            threshold: 80,
+            enabled: !isSelectionOpen && !comparedVerse && showVerses
+        }
+    );
+
     // Render content
     if (error) {
         return <AppError message={error.message} />;
@@ -295,17 +329,50 @@ const Bible = ({ intl, setLocale }) => {
                 isNextBookAvailable={isNextBookAvailable}
                 isPrevChapterAvailable={isPrevChapterAvailable}
                 isNextChapterAvailable={isNextChapterAvailable}
+                onOpenSelection={() => setIsSelectionOpen(true)}
             />
+            {isSelectionOpen && (
+                <SelectionGrid
+                    books={books}
+                    structure={structure}
+                    onSelectChapter={(book, chapter) => {
+                        changeSelectedBook(book);
+                        changeSelectedChapter(chapter);
+                    }}
+                    onClose={() => setIsSelectionOpen(false)}
+                />
+            )}
+            {comparedVerse && (
+                <ComparisonGrid
+                    verseId={comparedVerse}
+                    bookId={selectedBook}
+                    chapterId={selectedChapter}
+                    translations={translations}
+                    currentTranslation={selectedTranslation}
+                    onClose={() => setComparedVerse(null)}
+                />
+            )}
             <Reader
                 showVerses={showVerses}
                 selectedBook={selectedBook}
                 selectedChapter={selectedChapter}
                 verses={verses}
+                onVerseClick={(verseId) => setComparedVerse(verseId)}
+            />
+            <BottomNavigation
+                onPrevChapter={prevChapter}
+                onNextChapter={nextChapter}
+                onOpenSelection={() => setIsSelectionOpen(true)}
+                isPrevAvailable={isPrevChapterAvailable() || isPrevBookAvailable()}
+                isNextAvailable={isNextChapterAvailable() || isNextBookAvailable()}
+                currentBook={books[selectedBook]?.name}
+                currentChapter={selectedChapter}
             />
             <StatusBar
                 setLocaleAndUpdateHistory={setLocaleAndUpdateHistory}
                 translations={translations}
             />
+            <FontSizeControl />
         </>
     );
 };

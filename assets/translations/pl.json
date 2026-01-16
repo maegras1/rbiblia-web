@@ -5,5 +5,19 @@
   "bookList": "Lista ksiąg",
   "chapterList": "Lista rozdziałów",
   "linkOpenInRBibliaApp": "Otwórz w programie rBiblia dla Windows",
-  "changelogLink": "Zobacz dziennik zmian"
+  "changelogLink": "Zobacz dziennik zmian",
+  "oldTestament": "Stary Testament",
+  "newTestament": "Nowy Testament",
+  "selectBook": "Wybierz księgę",
+  "selectChapter": "Wybierz rozdział",
+  "backToBooks": "Wróć do ksiąg",
+  "compareVerse": "Porównaj werset",
+  "selectTranslationToCompare": "Wybierz tłumaczenie",
+  "chooseTranslation": "Wybierz tłumaczenie",
+  "verseNotFoundInTranslation": "Werset nie został znaleziony w tym tłumaczeniu",
+  "loading": "Ładowanie",
+  "prev": "Poprz.",
+  "next": "Nast.",
+  "previousChapter": "Poprzedni rozdział",
+  "nextChapter": "Następny rozdział"
 }

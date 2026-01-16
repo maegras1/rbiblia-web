@@ -5,5 +5,19 @@
   "bookList": "Book list",
   "chapterList": "Chapter list",
   "linkOpenInRBibliaApp": "Open at rBiblia Windows app",
-  "changelogLink": "See latest changes (in Polish only)"
+  "changelogLink": "See changelog",
+  "oldTestament": "Old Testament",
+  "newTestament": "New Testament",
+  "selectBook": "Select book",
+  "selectChapter": "Select chapter",
+  "backToBooks": "Back to books",
+  "compareVerse": "Compare verse",
+  "selectTranslationToCompare": "Select translation",
+  "chooseTranslation": "Choose translation",
+  "verseNotFoundInTranslation": "Verse not found in this translation",
+  "loading": "Loading",
+  "prev": "Prev",
+  "next": "Next",
+  "previousChapter": "Previous chapter",
+  "nextChapter": "Next chapter"
 }
