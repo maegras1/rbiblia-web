@@ -1,10 +1,10 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, memo } from "react";
 import { useIntl } from "react-intl";
 import { loadNotes, getVerseKey } from "./Notes";
 
 const LONG_PRESS_DURATION = 500; // ms
 
-export default function Verse({
+const Verse = memo(function Verse({
     verseContent,
     bookId,
     chapterId,
@@ -119,4 +119,6 @@ export default function Verse({
             </div>
         </div>
     );
-}
+});
+
+export default Verse;

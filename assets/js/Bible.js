@@ -15,6 +15,7 @@ import useSwipeNavigation from "./useSwipeNavigation";
 import { SideMenu, SideMenuTab, DisplaySettings } from "./SideMenu";
 import { NotesPanel, NoteEditor } from "./Notes";
 import SearchPanel from "./SearchPanel";
+import useVersesCache from "./useVersesCache";
 
 const Bible = ({ intl, setLocale }) => {
     const [error, setError] = useState(null);
@@ -24,6 +25,9 @@ const Bible = ({ intl, setLocale }) => {
     const [showVerses, setShowVerses] = useState(false);
     const [isSelectionOpen, setIsSelectionOpen] = useState(false);
     const [comparedVerse, setComparedVerse] = useState(null);
+
+    // Cache wersetów dla szybszego ładowania
+    const versesCache = useVersesCache(intl.locale);
 
     // Side menu states
     const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
@@ -111,8 +115,9 @@ const Bible = ({ intl, setLocale }) => {
         setShowVerses(false);
         setIsStructureLoading(true);
         keepChapterIfPossible.current = true;
+        versesCache.clearCache();  // Wyczyść cache przy zmianie tłumaczenia
         setSelectedTranslation(newTranslation);
-    }, []);
+    }, [versesCache]);
 
     const setLocaleAndUpdateHistory = (locale) => {
         const { chapter, book, translation } = getDataFromCurrentPathname();
@@ -160,7 +165,7 @@ const Bible = ({ intl, setLocale }) => {
         return structure[selectedBook][0];
     };
 
-    const changeSelectedChapter = (newSelectedChapter) => {
+    const changeSelectedChapter = async (newSelectedChapter) => {
         const { locale } = intl;
 
         updateHistory(
@@ -170,29 +175,34 @@ const Bible = ({ intl, setLocale }) => {
             newSelectedChapter
         );
 
-        setShowVerses(false);
+        // Sprawdź czy mamy dane w cache - jeśli tak, pokaż natychmiast
+        const isInCache = versesCache.isInCache(selectedTranslation, selectedBook, newSelectedChapter);
 
-        fetch(
-            "/api/" +
-            locale +
-            "/translation/" +
-            selectedTranslation +
-            "/book/" +
-            selectedBook +
-            "/chapter/" +
-            newSelectedChapter
-        )
-            .then((res) => res.json())
-            .then(
-                (result) => {
-                    setSelectedChapter(newSelectedChapter);
-                    setShowVerses(true);
-                    setVerses(result.data);
-                },
-                (error) => {
-                    setError(error);
-                }
+        if (!isInCache) {
+            setShowVerses(false);
+        }
+
+        try {
+            const result = await versesCache.getVerses(
+                selectedTranslation,
+                selectedBook,
+                newSelectedChapter
             );
+
+            setSelectedChapter(newSelectedChapter);
+            setVerses(result.data);
+            setShowVerses(true);
+
+            // Prefetch następnych i poprzednich rozdziałów w tle
+            versesCache.prefetchAdjacent(
+                selectedTranslation,
+                selectedBook,
+                newSelectedChapter,
+                structure
+            );
+        } catch (error) {
+            setError(error);
+        }
     };
 
     const loadTranslationsAndBooks = () => {
