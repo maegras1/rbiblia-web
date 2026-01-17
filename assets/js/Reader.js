@@ -2,7 +2,15 @@ import React from "react";
 import Verse from "./Verse";
 import SkeletonLoader from "./SkeletonLoader";
 
-const Reader = ({ selectedBook, selectedChapter, verses, showVerses, onVerseClick }) => {
+const Reader = ({
+    selectedBook,
+    selectedChapter,
+    verses,
+    showVerses,
+    onVerseClick,
+    onVerseLongPress,
+    notesVersion = 0
+}) => {
     if (!showVerses || !verses) {
         return <SkeletonLoader lines={15} />;
     }
@@ -19,6 +27,8 @@ const Reader = ({ selectedBook, selectedChapter, verses, showVerses, onVerseClic
                             verseId={verseId}
                             verseContent={verseContent}
                             onClick={() => onVerseClick(verseId)}
+                            onLongPress={() => onVerseLongPress?.(verseId)}
+                            notesVersion={notesVersion}
                         />
                     ))}
                 </div>

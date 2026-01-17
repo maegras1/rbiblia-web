@@ -12,7 +12,9 @@ import SelectionGrid from "./SelectionGrid";
 import ComparisonGrid from "./ComparisonGrid";
 import BottomNavigation from "./BottomNavigation";
 import useSwipeNavigation from "./useSwipeNavigation";
-import FontSizeControl from "./FontSizeControl";
+import { SideMenu, SideMenuTab, DisplaySettings } from "./SideMenu";
+import { NotesPanel, NoteEditor } from "./Notes";
+import SearchPanel from "./SearchPanel";
 
 const Bible = ({ intl, setLocale }) => {
     const [error, setError] = useState(null);
@@ -22,6 +24,48 @@ const Bible = ({ intl, setLocale }) => {
     const [showVerses, setShowVerses] = useState(false);
     const [isSelectionOpen, setIsSelectionOpen] = useState(false);
     const [comparedVerse, setComparedVerse] = useState(null);
+
+    // Side menu states
+    const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+    const [isNotesOpen, setIsNotesOpen] = useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+    // Note editor state
+    const [editingNoteVerse, setEditingNoteVerse] = useState(null);
+    const [notesVersion, setNotesVersion] = useState(0);  // Increment to refresh note indicators
+
+    // Font size (saved to localStorage)
+    const [fontSize, setFontSize] = useState(() => {
+        return localStorage.getItem('rbiblia-font-size') || 'medium';
+    });
+
+    // Font family (saved to localStorage)
+    const [fontFamily, setFontFamily] = useState(() => {
+        return localStorage.getItem('rbiblia-font-family') || 'serif';
+    });
+
+    // Save font size to localStorage and apply to CSS variable
+    useEffect(() => {
+        localStorage.setItem('rbiblia-font-size', fontSize);
+        const sizeMap = {
+            small: '0.9rem',
+            medium: '1.15rem',
+            large: '1.4rem',
+            xlarge: '1.7rem'
+        };
+        document.documentElement.style.setProperty('--verse-font-size', sizeMap[fontSize]);
+    }, [fontSize]);
+
+    // Save font family to localStorage and apply to CSS variable
+    useEffect(() => {
+        localStorage.setItem('rbiblia-font-family', fontFamily);
+        const familyMap = {
+            serif: 'Georgia, "Times New Roman", serif',
+            sans: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+            mono: '"Fira Code", "Cascadia Code", Consolas, monospace'
+        };
+        document.documentElement.style.setProperty('--verse-font-family', familyMap[fontFamily]);
+    }, [fontFamily]);
 
     // Note: It contains all books available - not only translation specific
     const [books, setBooks] = useState([]);
@@ -335,6 +379,7 @@ const Bible = ({ intl, setLocale }) => {
                 <SelectionGrid
                     books={books}
                     structure={structure}
+                    currentBook={selectedBook}
                     onSelectChapter={(book, chapter) => {
                         changeSelectedBook(book);
                         changeSelectedChapter(chapter);
@@ -358,11 +403,15 @@ const Bible = ({ intl, setLocale }) => {
                 selectedChapter={selectedChapter}
                 verses={verses}
                 onVerseClick={(verseId) => setComparedVerse(verseId)}
+                onVerseLongPress={(verseId) => setEditingNoteVerse(verseId)}
+                notesVersion={notesVersion}
             />
             <BottomNavigation
                 onPrevChapter={prevChapter}
                 onNextChapter={nextChapter}
                 onOpenSelection={() => setIsSelectionOpen(true)}
+                onOpenNotes={() => setIsNotesOpen(true)}
+                onOpenSearch={() => setIsSearchOpen(true)}
                 isPrevAvailable={isPrevChapterAvailable() || isPrevBookAvailable()}
                 isNextAvailable={isNextChapterAvailable() || isNextBookAvailable()}
                 currentBook={books[selectedBook]?.name}
@@ -372,7 +421,56 @@ const Bible = ({ intl, setLocale }) => {
                 setLocaleAndUpdateHistory={setLocaleAndUpdateHistory}
                 translations={translations}
             />
-            <FontSizeControl />
+
+            {/* Panel notatek */}
+            <NotesPanel
+                isOpen={isNotesOpen}
+                onClose={() => setIsNotesOpen(false)}
+                selectedBook={selectedBook}
+                selectedChapter={selectedChapter}
+                books={books}
+                onNavigateToVerse={(book, chapter, verse) => {
+                    changeSelectedBook(book);
+                    changeSelectedChapter(chapter);
+                }}
+            />
+
+            {/* Panel wyszukiwania */}
+            <SearchPanel
+                isOpen={isSearchOpen}
+                onClose={() => setIsSearchOpen(false)}
+                selectedTranslation={selectedTranslation}
+                books={books}
+                onNavigateToVerse={(book, chapter, verse) => {
+                    changeSelectedBook(book);
+                    changeSelectedChapter(chapter);
+                }}
+            />
+
+            {/* Boczna zakładka i menu */}
+            <SideMenuTab onClick={() => setIsSideMenuOpen(true)} />
+            <SideMenu
+                isOpen={isSideMenuOpen}
+                onClose={() => setIsSideMenuOpen(false)}
+            >
+                <DisplaySettings
+                    fontSize={fontSize}
+                    setFontSize={setFontSize}
+                    fontFamily={fontFamily}
+                    setFontFamily={setFontFamily}
+                />
+            </SideMenu>
+
+            {/* Edytor notatek */}
+            <NoteEditor
+                isOpen={editingNoteVerse !== null}
+                onClose={() => setEditingNoteVerse(null)}
+                onSave={() => setNotesVersion(v => v + 1)}
+                book={selectedBook}
+                chapter={selectedChapter}
+                verse={editingNoteVerse}
+                bookName={books[selectedBook]?.name}
+            />
         </>
     );
 };
