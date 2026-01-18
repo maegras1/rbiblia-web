@@ -14,12 +14,11 @@ const Verse = memo(function Verse({
     notesVersion = 0  // Increment to force note indicator refresh
 }) {
     const { formatMessage } = useIntl();
-    const appLink = "bib://" + bookId + chapterId + ":" + verseId;
-    const appVerse = chapterId + ":" + verseId;
-
-    const longPressTimer = useRef(null);
-    const [isPressing, setIsPressing] = useState(false);
     const [hasNote, setHasNote] = useState(false);
+    const [isPressing, setIsPressing] = useState(false);
+    const longPressTimer = useRef(null);
+    const isLongPress = useRef(false);
+    const startPos = useRef({ x: 0, y: 0 });
 
     // Check if this verse has a note
     useEffect(() => {
@@ -28,44 +27,67 @@ const Verse = memo(function Verse({
         setHasNote(!!notes[key]);
     }, [bookId, chapterId, verseId, notesVersion]);
 
-    const handleTouchStart = (e) => {
-        setIsPressing(true);
-        longPressTimer.current = setTimeout(() => {
-            setIsPressing(false);
-            onLongPress?.(verseId);
-        }, LONG_PRESS_DURATION);
+    const appLink = `rbiblia://${bookId}/${chapterId}/${verseId}`;
+    const appVerse = verseId;
+
+    // Trigger long press action
+    const triggerLongPress = () => {
+        isLongPress.current = true;
+        setIsPressing(false);
+        onLongPress?.(verseId);
     };
 
-    const handleTouchEnd = () => {
+    // Touch events for mobile
+    const handleTouchStart = (e) => {
+        isLongPress.current = false;
+        setIsPressing(true);
+        startPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        longPressTimer.current = setTimeout(triggerLongPress, LONG_PRESS_DURATION);
+    };
+
+    const handleTouchEnd = (e) => {
         setIsPressing(false);
         if (longPressTimer.current) {
             clearTimeout(longPressTimer.current);
             longPressTimer.current = null;
         }
+        // Prevent click if it was a long press
+        if (isLongPress.current) {
+            e.preventDefault();
+        }
     };
 
-    const handleTouchMove = () => {
-        // Cancel long press if user moves finger
-        setIsPressing(false);
-        if (longPressTimer.current) {
-            clearTimeout(longPressTimer.current);
-            longPressTimer.current = null;
+    const handleTouchMove = (e) => {
+        // Cancel long press if user moves finger more than 10px
+        const touch = e.touches[0];
+        const dx = Math.abs(touch.clientX - startPos.current.x);
+        const dy = Math.abs(touch.clientY - startPos.current.y);
+        if (dx > 10 || dy > 10) {
+            setIsPressing(false);
+            if (longPressTimer.current) {
+                clearTimeout(longPressTimer.current);
+                longPressTimer.current = null;
+            }
         }
     };
 
     // Mouse events for desktop
-    const handleMouseDown = () => {
+    const handleMouseDown = (e) => {
+        // Only respond to left click
+        if (e.button !== 0) return;
+
+        isLongPress.current = false;
         setIsPressing(true);
-        longPressTimer.current = setTimeout(() => {
-            setIsPressing(false);
-            onLongPress?.(verseId);
-        }, LONG_PRESS_DURATION);
+        startPos.current = { x: e.clientX, y: e.clientY };
+
+        longPressTimer.current = setTimeout(triggerLongPress, LONG_PRESS_DURATION);
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e) => {
         setIsPressing(false);
         if (longPressTimer.current) {
             clearTimeout(longPressTimer.current);
+            longPressTimer.current = null;
         }
     };
 
@@ -73,6 +95,39 @@ const Verse = memo(function Verse({
         setIsPressing(false);
         if (longPressTimer.current) {
             clearTimeout(longPressTimer.current);
+            longPressTimer.current = null;
+        }
+    };
+
+    const handleMouseMove = (e) => {
+        // Cancel long press if mouse moves more than 10px
+        if (!isPressing) return;
+        const dx = Math.abs(e.clientX - startPos.current.x);
+        const dy = Math.abs(e.clientY - startPos.current.y);
+        if (dx > 10 || dy > 10) {
+            setIsPressing(false);
+            if (longPressTimer.current) {
+                clearTimeout(longPressTimer.current);
+                longPressTimer.current = null;
+            }
+        }
+    };
+
+    const handleClick = (e) => {
+        // Prevent click action if it was a long press
+        if (isLongPress.current) {
+            isLongPress.current = false;
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+        onClick?.(e);
+    };
+
+    // Prevent context menu on long press
+    const handleContextMenu = (e) => {
+        if (isPressing || isLongPress.current) {
+            e.preventDefault();
         }
     };
 
@@ -106,14 +161,16 @@ const Verse = memo(function Verse({
             </div>
             <div
                 className="col-10 col-lg-11 verse"
-                onClick={onClick}
+                onClick={handleClick}
+                onContextMenu={handleContextMenu}
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
                 onTouchMove={handleTouchMove}
                 onMouseDown={handleMouseDown}
                 onMouseUp={handleMouseUp}
+                onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'pointer', userSelect: 'none' }}
             >
                 {verseContent.replaceAll("//", "\u000A")}
             </div>

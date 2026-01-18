@@ -69,8 +69,12 @@ const SearchPanel = ({
                 throw new Error(data.message || data.error || "Search failed");
             }
 
+            // API returns { code, data: { translation, query, results } }
+            // Handle both nested and flat response structures
+            const resultsData = data.data?.results || data.results || [];
+
             // Map API response to our format
-            const mappedResults = (data.results || []).map(item => ({
+            const mappedResults = resultsData.map(item => ({
                 book: item.book,
                 chapter: parseInt(item.chapter),
                 verse: parseInt(item.verse),

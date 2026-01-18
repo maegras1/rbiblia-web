@@ -55,5 +55,13 @@
   "searchHelpText": "Wyszukuj słowa i frazy w wybranym przekładzie Pisma Świętego:",
   "searchHelpTip1": "Wpisz słowo lub frazę (min. 3 znaki)",
   "searchHelpTip2": "Wyniki pojawią się automatycznie",
-  "searchHelpTip3": "Kliknij wynik aby przejść do wersetu"
+  "searchHelpTip3": "Kliknij wynik aby przejść do wersetu",
+  "notesBackup": "Kopia zapasowa notatek",
+  "notesCount": "Liczba notatek: {count}",
+  "exportNotes": "Eksportuj",
+  "importNotes": "Importuj",
+  "importSuccess": "Notatki zostały zaimportowane",
+  "importError": "Błąd podczas importu pliku",
+  "retry": "Spróbuj ponownie",
+  "chapterLoadError": "Nie udało się załadować rozdziału"
 }

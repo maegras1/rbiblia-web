@@ -4,7 +4,7 @@ import Reader from "./Reader";
 import StatusBar from "./StatusBar";
 import { injectIntl } from "react-intl";
 import getDataFromCurrentPathname from "./getDataFromCurrentPathname";
-import AppError from "./AppError";
+import { AppError, ErrorToast } from "./AppError";
 import AppLoading from "./AppLoading";
 import updateHistory from "./updateHistory";
 import getAppropriateBook from "./getAppropriateBook";
@@ -19,6 +19,7 @@ import useVersesCache from "./useVersesCache";
 
 const Bible = ({ intl, setLocale }) => {
     const [error, setError] = useState(null);
+    const [toastError, setToastError] = useState(null);  // Non-blocking error notifications
     const [isBooksLoading, setIsBooksLoading] = useState(true);
     const [isTranslationsLoading, setIsTranslationsLoading] = useState(true);
     const [isStructureLoading, setIsStructureLoading] = useState(true);
@@ -201,7 +202,11 @@ const Bible = ({ intl, setLocale }) => {
                 structure
             );
         } catch (error) {
-            setError(error);
+            // Use toast for chapter loading errors (non-blocking)
+            setToastError(
+                error.message || intl.formatMessage({ id: "chapterLoadError" })
+            );
+            setShowVerses(true);  // Keep showing previous content
         }
     };
 
@@ -355,7 +360,15 @@ const Bible = ({ intl, setLocale }) => {
 
     // Render content
     if (error) {
-        return <AppError message={error.message} />;
+        return (
+            <AppError
+                message={error.message || intl.formatMessage({ id: "unexpectedErrorOccurred" })}
+                onRetry={() => {
+                    setError(null);
+                    loadTranslationsAndBooks();
+                }}
+            />
+        );
     }
     if (isTranslationsLoading || isBooksLoading) {
         return <AppLoading />;
@@ -384,6 +397,9 @@ const Bible = ({ intl, setLocale }) => {
                 isPrevChapterAvailable={isPrevChapterAvailable}
                 isNextChapterAvailable={isNextChapterAvailable}
                 onOpenSelection={() => setIsSelectionOpen(true)}
+                onOpenNotes={() => setIsNotesOpen(true)}
+                onOpenSearch={() => setIsSearchOpen(true)}
+                onOpenSettings={() => setIsSideMenuOpen(true)}
             />
             {isSelectionOpen && (
                 <SelectionGrid
@@ -481,6 +497,14 @@ const Bible = ({ intl, setLocale }) => {
                 verse={editingNoteVerse}
                 bookName={books[selectedBook]?.name}
             />
+
+            {/* Toast dla błędów nieblokujących */}
+            {toastError && (
+                <ErrorToast
+                    message={toastError}
+                    onClose={() => setToastError(null)}
+                />
+            )}
         </>
     );
 };
