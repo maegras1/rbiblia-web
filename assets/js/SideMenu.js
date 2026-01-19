@@ -55,11 +55,34 @@ const SideMenuTab = ({ onClick }) => {
     );
 };
 
+// Helper functions for settings
+const getComparisonLimit = () => {
+    return parseInt(localStorage.getItem('rbiblia_comparison_limit') || '4', 10);
+};
+
+const setComparisonLimitValue = (limit) => {
+    localStorage.setItem('rbiblia_comparison_limit', limit.toString());
+};
+
+const getFavoriteTranslations = () => {
+    try {
+        return JSON.parse(localStorage.getItem('rbiblia_favorite_translations') || '[]');
+    } catch {
+        return [];
+    }
+};
+
+const saveFavoriteTranslations = (favorites) => {
+    localStorage.setItem('rbiblia_favorite_translations', JSON.stringify(favorites));
+};
+
 // Sekcja ustawień wyświetlania z rozmiarem i rodzajem czcionki
-const DisplaySettings = ({ fontSize, setFontSize, fontFamily, setFontFamily }) => {
+const DisplaySettings = ({ fontSize, setFontSize, fontFamily, setFontFamily, translations = [] }) => {
     const { formatMessage } = useIntl();
     const fileInputRef = useRef(null);
     const [importStatus, setImportStatus] = useState(null);
+    const [comparisonLimit, setComparisonLimit] = useState(getComparisonLimit);
+    const [favoriteTranslations, setFavoriteTranslationsState] = useState(getFavoriteTranslations);
 
     const fontSizes = [
         { value: 'small', label: 'A', size: '0.9rem' },
@@ -73,6 +96,23 @@ const DisplaySettings = ({ fontSize, setFontSize, fontFamily, setFontFamily }) =
         { value: 'sans', label: 'Sans', preview: 'Inter, sans-serif' },
         { value: 'mono', label: 'Mono', preview: 'monospace' },
     ];
+
+    const comparisonOptions = [2, 3, 4, 5, 6];
+
+    // Handle comparison limit change
+    const handleComparisonLimitChange = (limit) => {
+        setComparisonLimit(limit);
+        setComparisonLimitValue(limit);
+    };
+
+    // Toggle favorite translation
+    const toggleFavorite = (translationId) => {
+        const newFavorites = favoriteTranslations.includes(translationId)
+            ? favoriteTranslations.filter(id => id !== translationId)
+            : [...favoriteTranslations, translationId];
+        setFavoriteTranslationsState(newFavorites);
+        saveFavoriteTranslations(newFavorites);
+    };
 
     // Eksport notatek do pliku JSON
     const handleExportNotes = () => {
@@ -250,8 +290,57 @@ const DisplaySettings = ({ fontSize, setFontSize, fontFamily, setFontFamily }) =
                     )}
                 </div>
             </div>
+
+            {/* Sekcja porównywania tłumaczeń */}
+            <div className="side-menu-section">
+                <h4 className="side-menu-section-title">
+                    {formatMessage({ id: "comparisonSettings" })}
+                </h4>
+
+                <div className="setting-group">
+                    <label className="setting-label">{formatMessage({ id: "comparisonLimit" })}</label>
+                    <div className="comparison-limit-buttons">
+                        {comparisonOptions.map((num) => (
+                            <button
+                                key={num}
+                                className={`comparison-limit-btn ${comparisonLimit === num ? 'active' : ''}`}
+                                onClick={() => handleComparisonLimitChange(num)}
+                            >
+                                {num}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Sekcja ulubionych tłumaczeń */}
+            {translations.length > 0 && (
+                <div className="side-menu-section">
+                    <h4 className="side-menu-section-title">
+                        {formatMessage({ id: "favoriteTranslations" })}
+                    </h4>
+                    <p className="setting-hint">
+                        {formatMessage({ id: "favoriteTranslationsHint" })}
+                    </p>
+
+                    <div className="favorite-translations-list">
+                        {translations.map((t) => (
+                            <div
+                                key={t.id}
+                                className={`favorite-translation-item ${favoriteTranslations.includes(t.id) ? 'is-favorite' : ''}`}
+                                onClick={() => toggleFavorite(t.id)}
+                            >
+                                <span className="favorite-star">
+                                    {favoriteTranslations.includes(t.id) ? '★' : '☆'}
+                                </span>
+                                <span className="favorite-name">{t.name}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </>
     );
 };
 
-export { SideMenu, SideMenuTab, DisplaySettings };
+export { SideMenu, SideMenuTab, DisplaySettings, getComparisonLimit, getFavoriteTranslations };

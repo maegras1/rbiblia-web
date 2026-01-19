@@ -9,6 +9,20 @@ $font-bible: 'Crimson Text', Georgia, 'Times New Roman', serif;
   border-right: 1px solid $rb-border-color;
 }
 
+// Brighter close button
+.btn-close {
+  opacity: 0.7;
+  filter: brightness(1.2);
+
+  &:hover {
+    opacity: 1;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    filter: invert(1) brightness(1.5);
+  }
+}
+
 @mixin rb-border-clean {
   border-left: 0;
   border-right: 0;
@@ -146,6 +160,41 @@ main {
       svg {
         width: 12px;
         height: 12px;
+      }
+    }
+
+    // Verse number cell with add note hint
+    .verse-number-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+
+      .add-note-hint {
+        position: absolute;
+        left: 0;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $rb-header-navigator-arrow;
+        opacity: 0;
+        cursor: pointer;
+        transition: opacity 0.15s ease;
+
+        svg {
+          width: 14px;
+          height: 14px;
+        }
+
+        &:hover {
+          opacity: 1 !important;
+        }
+      }
+
+      &:hover .add-note-hint {
+        opacity: 0.5;
       }
     }
   }
@@ -1264,6 +1313,124 @@ footer {
 .import-error {
   background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
+}
+
+// Comparison limit buttons
+.comparison-limit-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.comparison-limit-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 2px solid #ddd;
+  background: white;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: $rb-header-navigator-arrow;
+    background: rgba($rb-header-navigator-arrow, 0.05);
+  }
+
+  &.active {
+    border-color: $rb-header-navigator-arrow;
+    background: $rb-header-navigator-arrow;
+    color: white;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    background: #2d2d2d;
+    border-color: #444;
+    color: #ddd;
+
+    &:hover {
+      border-color: $rb-header-navigator-arrow;
+    }
+
+    &.active {
+      background: $rb-header-navigator-arrow;
+      color: white;
+    }
+  }
+}
+
+// Favorite translations list
+.favorite-translations-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+
+  @media (prefers-color-scheme: dark) {
+    border-color: #444;
+  }
+}
+
+.favorite-translation-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid #eee;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: rgba($rb-header-navigator-arrow, 0.05);
+  }
+
+  &.is-favorite {
+    background: rgba($rb-header-navigator-arrow, 0.08);
+
+    .favorite-star {
+      color: #fbbf24;
+    }
+  }
+
+  .favorite-star {
+    font-size: 1.25rem;
+    color: #ccc;
+    transition: color 0.15s ease;
+  }
+
+  .favorite-name {
+    font-size: 0.9rem;
+    color: #333;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    border-bottom-color: #333;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    &.is-favorite {
+      background: rgba($rb-header-navigator-arrow, 0.15);
+    }
+
+    .favorite-star {
+      color: #666;
+    }
+
+    &.is-favorite .favorite-star {
+      color: #fbbf24;
+    }
+
+    .favorite-name {
+      color: #ccc;
+    }
+  }
 }
 
 // Styl dla przycisku "bottom-nav-btn-primary" zamiast "bottom-nav-btn-center"
@@ -2585,5 +2752,233 @@ footer {
       background: #dc2626;
       color: white;
     }
+  }
+}
+
+// Comparison Modal Styles
+.comparison-overlay {
+  .selection-content {
+    max-width: 900px;
+  }
+}
+
+.comparison-box {
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid #e5e7eb;
+
+  @media (prefers-color-scheme: dark) {
+    background: #1e1e1e;
+    border-color: #333;
+  }
+}
+
+.comparison-box-primary {
+  border: 2px solid $rb-header-navigator-arrow;
+  background: rgba($rb-header-navigator-arrow, 0.05);
+
+  @media (prefers-color-scheme: dark) {
+    background: rgba($rb-header-navigator-arrow, 0.1);
+  }
+}
+
+.comparison-box-secondary {
+  border: 1px solid #d1d5db;
+
+  @media (prefers-color-scheme: dark) {
+    border-color: #444;
+  }
+}
+
+.comparison-box-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  @media (prefers-color-scheme: dark) {
+    color: #aaa;
+  }
+}
+
+.comparison-box-title-primary {
+  color: $rb-header-navigator-arrow;
+}
+
+.comparison-current-badge {
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  background: $rb-header-navigator-arrow;
+  color: white;
+}
+
+.comparison-text {
+  font-family: $font-bible;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin: 0;
+  color: #333;
+  white-space: pre-wrap;
+
+  @media (prefers-color-scheme: dark) {
+    color: #ddd;
+  }
+}
+
+.comparison-text-primary {
+  font-size: 1.2rem;
+}
+
+.comparison-not-found {
+  font-style: italic;
+  color: #999;
+  margin: 0;
+}
+
+.comparison-loading {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem;
+}
+
+.comparison-divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+  gap: 1rem;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e5e7eb;
+
+    @media (prefers-color-scheme: dark) {
+      background: #444;
+    }
+  }
+
+  span {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+.comparison-selectors {
+  display: grid;
+  gap: 1rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.comparison-slot {
+  display: flex;
+  flex-direction: column;
+}
+
+.comparison-slot-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.comparison-slot-number {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f3f4f6;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #666;
+  flex-shrink: 0;
+
+  @media (prefers-color-scheme: dark) {
+    background: #333;
+    color: #aaa;
+  }
+}
+
+.comparison-slot select {
+  flex: 1;
+}
+
+// Comparison navigation header
+.comparison-nav-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.comparison-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.comparison-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: $rb-header-navigator-arrow;
+    background: rgba($rb-header-navigator-arrow, 0.1);
+    color: $rb-header-navigator-arrow;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    background: #2d2d2d;
+    border-color: #444;
+    color: #ccc;
+
+    &:hover:not(:disabled) {
+      border-color: $rb-header-navigator-arrow;
+      color: $rb-header-navigator-arrow;
+    }
+  }
+}
+
+.comparison-keyboard-hint {
+  font-size: 0.75rem;
+  color: #999;
+  padding: 0.25rem 0.5rem;
+  background: #f3f4f6;
+  border-radius: 4px;
+
+  @media (prefers-color-scheme: dark) {
+    background: #333;
+    color: #777;
   }
 }

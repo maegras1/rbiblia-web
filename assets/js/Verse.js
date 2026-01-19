@@ -142,7 +142,22 @@ const Verse = memo(function Verse({
 
     return (
         <div className={`row line ${isPressing ? 'pressing' : ''} ${hasNote ? 'has-note' : ''}`}>
-            <div className="col-2 col-lg-1 d-flex align-items-center justify-content-center">
+            <div className="col-2 col-lg-1 verse-number-cell">
+                {/* Add note hint - shown on hover when no note exists */}
+                {!hasNote && (
+                    <span
+                        className="add-note-hint"
+                        title={formatMessage({ id: "addNote" })}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onLongPress?.(verseId);
+                        }}
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 5v14M5 12h14"></path>
+                        </svg>
+                    </span>
+                )}
                 <a
                     href={appLink}
                     title={formatMessage({ id: "linkOpenInRBibliaApp" })}

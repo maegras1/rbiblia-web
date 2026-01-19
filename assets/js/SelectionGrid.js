@@ -8,6 +8,7 @@ const SelectionGrid = ({
     onSelectChapter,
     initialBook = null,
     currentBook = null,  // Currently active book to highlight
+    currentChapter = null,  // Currently active chapter to highlight
     onClose,
 }) => {
     const { formatMessage } = useIntl();
@@ -109,7 +110,7 @@ const SelectionGrid = ({
                             {structure[selectedBook].map((chapter) => (
                                 <div
                                     key={chapter}
-                                    className="tile chapter-tile"
+                                    className={`tile chapter-tile ${selectedBook === currentBook && chapter === currentChapter ? 'tile-active' : ''}`}
                                     onClick={() => handleChapterClick(chapter)}
                                 >
                                     <span className="tile-text">{chapter}</span>

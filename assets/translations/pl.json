@@ -63,5 +63,16 @@
   "importSuccess": "Notatki zostały zaimportowane",
   "importError": "Błąd podczas importu pliku",
   "retry": "Spróbuj ponownie",
-  "chapterLoadError": "Nie udało się załadować rozdziału"
+  "chapterLoadError": "Nie udało się załadować rozdziału",
+  "comparisonSettings": "Porównywanie tłumaczeń",
+  "comparisonLimit": "Liczba tłumaczeń do porównania",
+  "favoriteTranslations": "Ulubione tłumaczenia",
+  "favoriteTranslationsHint": "Kliknij gwiazdkę aby dodać/usunąć z ulubionych",
+  "favorites": "Ulubione",
+  "allTranslations": "Wszystkie tłumaczenia",
+  "currentTranslation": "Bieżące",
+  "compareWith": "Porównaj z",
+  "previousVerse": "Poprzedni werset",
+  "nextVerse": "Następny werset",
+  "navigateVerses": "nawiguj"
 }

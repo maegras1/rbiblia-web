@@ -406,6 +406,7 @@ const Bible = ({ intl, setLocale }) => {
                     books={books}
                     structure={structure}
                     currentBook={selectedBook}
+                    currentChapter={selectedChapter}
                     onSelectChapter={(book, chapter) => {
                         changeSelectedBook(book);
                         changeSelectedChapter(chapter);
@@ -420,6 +421,16 @@ const Bible = ({ intl, setLocale }) => {
                     chapterId={selectedChapter}
                     translations={translations}
                     currentTranslation={selectedTranslation}
+                    totalVerses={Object.keys(verses).length}
+                    onNavigateVerse={(direction) => {
+                        const currentVerse = parseInt(comparedVerse, 10);
+                        const maxVerse = Object.keys(verses).length;
+                        if (direction === 'prev' && currentVerse > 1) {
+                            setComparedVerse(currentVerse - 1);
+                        } else if (direction === 'next' && currentVerse < maxVerse) {
+                            setComparedVerse(currentVerse + 1);
+                        }
+                    }}
                     onClose={() => setComparedVerse(null)}
                 />
             )}
@@ -484,6 +495,7 @@ const Bible = ({ intl, setLocale }) => {
                     setFontSize={setFontSize}
                     fontFamily={fontFamily}
                     setFontFamily={setFontFamily}
+                    translations={translations}
                 />
             </SideMenu>
 
