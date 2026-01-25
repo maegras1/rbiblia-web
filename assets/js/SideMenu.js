@@ -38,12 +38,12 @@ const SideMenu = ({ isOpen, onClose, children }) => {
 };
 
 // Przycisk-zakładka przyklejony do krawędzi - niżej na ekranie
-const SideMenuTab = ({ onClick }) => {
+const SideMenuTab = ({ onClick, className = "" }) => {
     const { formatMessage } = useIntl();
 
     return (
         <button
-            className="side-menu-tab"
+            className={`side-menu-tab ${className}`}
             onClick={onClick}
             aria-label={formatMessage({ id: "openMenu" })}
         >
@@ -76,13 +76,23 @@ const saveFavoriteTranslations = (favorites) => {
     localStorage.setItem('rbiblia_favorite_translations', JSON.stringify(favorites));
 };
 
-// Sekcja ustawień wyświetlania z rozmiarem i rodzajem czcionki
-const DisplaySettings = ({ fontSize, setFontSize, fontFamily, setFontFamily, translations = [] }) => {
-    const { formatMessage } = useIntl();
+// Sekcja ustawień z zakładkami
+const DisplaySettings = ({
+    fontSize,
+    setFontSize,
+    fontFamily,
+    setFontFamily,
+    translations = [],
+    setLocaleAndUpdateHistory,
+    theme,
+    setTheme
+}) => {
+    const { formatMessage, locale } = useIntl();
     const fileInputRef = useRef(null);
     const [importStatus, setImportStatus] = useState(null);
     const [comparisonLimit, setComparisonLimit] = useState(getComparisonLimit);
     const [favoriteTranslations, setFavoriteTranslationsState] = useState(getFavoriteTranslations);
+    const [activeTab, setActiveTab] = useState('text');
 
     const fontSizes = [
         { value: 'small', label: 'A', size: '0.9rem' },
@@ -97,9 +107,63 @@ const DisplaySettings = ({ fontSize, setFontSize, fontFamily, setFontFamily, tra
         { value: 'mono', label: 'Mono', preview: 'monospace' },
     ];
 
+    const themes = [
+        { value: 'system', label: formatMessage({ id: 'themeSystem' || 'System' }), icon: '⚙️' },
+        { value: 'light', label: formatMessage({ id: 'themeLight' || 'Light' }), icon: '☀️' },
+        { value: 'dark', label: formatMessage({ id: 'themeDark' || 'Dark' }), icon: '🌙' },
+    ];
+
     const comparisonOptions = [2, 3, 4, 5, 6];
 
+    // Tabs configuration
+    const tabs = [
+        {
+            id: 'text',
+            icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="4 20 10 4 16 20"></polyline>
+                    <line x1="6" y1="16" x2="14" y2="16"></line>
+                    <circle cx="18" cy="16" r="4"></circle>
+                    <line x1="22" y1="12" x2="22" y2="20"></line>
+                </svg>
+            ),
+            label: formatMessage({ id: "textSettings" })
+        },
+        {
+            id: 'language', // New Language Tab
+            icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+            ),
+            label: formatMessage({ id: "language" })
+        },
+        {
+            id: 'favorites',
+            icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+            ),
+            label: formatMessage({ id: "favoriteTranslations" })
+        },
+        {
+            id: 'backup',
+            icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1-2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+            ),
+            label: formatMessage({ id: "notesBackup" })
+        }
+    ];
+
     // Handle comparison limit change
+    const comparisonLimitValue = comparisonLimit;
     const handleComparisonLimitChange = (limit) => {
         setComparisonLimit(limit);
         setComparisonLimitValue(limit);
@@ -189,153 +253,253 @@ const DisplaySettings = ({ fontSize, setFontSize, fontFamily, setFontFamily, tra
         return Object.keys(notes).length + generalNotes.length;
     };
 
+    // Filtruj tylko ulubione tłumaczenia
+    const favoriteTranslationsList = translations.filter(t => favoriteTranslations.includes(t.id));
+
     return (
         <>
-            <div className="side-menu-section">
-                <h4 className="side-menu-section-title">
-                    {formatMessage({ id: "displaySettings" })}
-                </h4>
+            {/* Tab navigation */}
+            <div className="settings-tabs">
+                {tabs.map(tab => (
+                    <button
+                        key={tab.id}
+                        className={`settings-tab ${activeTab === tab.id ? 'active' : ''}`}
+                        onClick={() => setActiveTab(tab.id)}
+                        title={tab.label}
+                    >
+                        {tab.icon}
+                    </button>
+                ))}
+            </div>
 
-                {/* Rozmiar czcionki */}
-                <div className="setting-group">
-                    <label className="setting-label">{formatMessage({ id: "fontSize" })}</label>
-                    <div className="font-size-buttons">
-                        {fontSizes.map((fs) => (
-                            <button
-                                key={fs.value}
-                                className={`font-size-btn ${fontSize === fs.value ? 'active' : ''}`}
-                                onClick={() => setFontSize(fs.value)}
-                                style={{ fontSize: fs.size }}
-                            >
-                                {fs.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+            {/* Text settings tab */}
+            {activeTab === 'text' && (
+                <div className="side-menu-section animate-slide-up">
+                    <h4 className="side-menu-section-title">
+                        {formatMessage({ id: "displaySettings" })}
+                    </h4>
 
-                {/* Rodzaj czcionki */}
-                {setFontFamily && (
+                    {/* Motyw (Theme) */}
+                    {setTheme && (
+                        <div className="setting-group">
+                            <label className="setting-label">{formatMessage({ id: "theme" })}</label>
+                            <div className="language-buttons d-flex gap-2">
+                                {themes.map((t) => (
+                                    <button
+                                        key={t.value}
+                                        className={`font-family-btn ${theme === t.value ? 'active' : ''}`}
+                                        onClick={() => setTheme(t.value)}
+                                        title={t.label}
+                                    >
+                                        <span className="me-1">{t.icon}</span>
+                                        <span className="d-none d-sm-inline">{t.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Rozmiar czcionki */}
                     <div className="setting-group">
-                        <label className="setting-label">{formatMessage({ id: "fontFamily" })}</label>
-                        <div className="font-family-buttons">
-                            {fontFamilies.map((ff) => (
+                        <label className="setting-label">{formatMessage({ id: "fontSize" })}</label>
+                        <div className="font-size-buttons">
+                            {fontSizes.map((fs) => (
                                 <button
-                                    key={ff.value}
-                                    className={`font-family-btn ${fontFamily === ff.value ? 'active' : ''}`}
-                                    onClick={() => setFontFamily(ff.value)}
-                                    style={{ fontFamily: ff.preview }}
+                                    key={fs.value}
+                                    className={`font-size-btn ${fontSize === fs.value ? 'active' : ''}`}
+                                    onClick={() => setFontSize(fs.value)}
+                                    style={{ fontSize: fs.size }}
                                 >
-                                    {ff.label}
+                                    {fs.label}
                                 </button>
                             ))}
                         </div>
                     </div>
-                )}
-            </div>
 
-            {/* Sekcja notatek */}
-            <div className="side-menu-section">
-                <h4 className="side-menu-section-title">
-                    {formatMessage({ id: "notesBackup" })}
-                </h4>
-
-                <p className="setting-hint">
-                    {formatMessage({ id: "notesCount" }, { count: getNotesCount() })}
-                </p>
-
-                <div className="setting-group">
-                    <div className="notes-backup-buttons">
-                        <button
-                            className="backup-btn backup-export"
-                            onClick={handleExportNotes}
-                        >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="7 10 12 15 17 10"></polyline>
-                                <line x1="12" y1="15" x2="12" y2="3"></line>
-                            </svg>
-                            {formatMessage({ id: "exportNotes" })}
-                        </button>
-
-                        <button
-                            className="backup-btn backup-import"
-                            onClick={() => fileInputRef.current?.click()}
-                        >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="17 8 12 3 7 8"></polyline>
-                                <line x1="12" y1="3" x2="12" y2="15"></line>
-                            </svg>
-                            {formatMessage({ id: "importNotes" })}
-                        </button>
-
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept=".json"
-                            onChange={handleImportNotes}
-                            style={{ display: 'none' }}
-                        />
-                    </div>
-
-                    {importStatus === 'success' && (
-                        <p className="import-status import-success">
-                            ✓ {formatMessage({ id: "importSuccess" })}
-                        </p>
-                    )}
-                    {importStatus === 'error' && (
-                        <p className="import-status import-error">
-                            ✗ {formatMessage({ id: "importError" })}
-                        </p>
+                    {/* Rodzaj czcionki */}
+                    {setFontFamily && (
+                        <div className="setting-group">
+                            <label className="setting-label">{formatMessage({ id: "fontFamily" })}</label>
+                            <div className="font-family-buttons">
+                                {fontFamilies.map((ff) => (
+                                    <button
+                                        key={ff.value}
+                                        className={`font-family-btn ${fontFamily === ff.value ? 'active' : ''}`}
+                                        onClick={() => setFontFamily(ff.value)}
+                                        style={{ fontFamily: ff.preview }}
+                                    >
+                                        {ff.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     )}
                 </div>
-            </div>
+            )}
 
-            {/* Sekcja porównywania tłumaczeń */}
-            <div className="side-menu-section">
-                <h4 className="side-menu-section-title">
-                    {formatMessage({ id: "comparisonSettings" })}
-                </h4>
-
-                <div className="setting-group">
-                    <label className="setting-label">{formatMessage({ id: "comparisonLimit" })}</label>
-                    <div className="comparison-limit-buttons">
-                        {comparisonOptions.map((num) => (
-                            <button
-                                key={num}
-                                className={`comparison-limit-btn ${comparisonLimit === num ? 'active' : ''}`}
-                                onClick={() => handleComparisonLimitChange(num)}
-                            >
-                                {num}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* Sekcja ulubionych tłumaczeń */}
-            {translations.length > 0 && (
-                <div className="side-menu-section">
+            {/* Language settings tab */}
+            {activeTab === 'language' && setLocaleAndUpdateHistory && (
+                <div className="side-menu-section animate-slide-up">
                     <h4 className="side-menu-section-title">
-                        {formatMessage({ id: "favoriteTranslations" })}
+                        {formatMessage({ id: "appLanguage" })}
                     </h4>
+
+                    <div className="setting-group">
+                        <label className="setting-label">{formatMessage({ id: "selectLanguage" })}</label>
+                        <div className="language-buttons d-flex flex-column gap-2">
+
+                            {['pl', 'en', 'de'].map(lang => (
+                                <button
+                                    key={lang}
+                                    className={`font-family-btn w-100 justify-content-start px-3 ${locale === lang ? 'active' : ''}`}
+                                    onClick={() => setLocaleAndUpdateHistory(lang)}
+                                >
+                                    {lang === 'pl' && "🇵🇱 Polski"}
+                                    {lang === 'en' && "🇬🇧 English"}
+                                    {lang === 'de' && "🇩🇪 Deutsch"}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Favorites tab */}
+            {activeTab === 'favorites' && (
+                <div className="animate-slide-up">
+                    {/* Sekcja porównywania tłumaczeń */}
+                    <div className="side-menu-section">
+                        <h4 className="side-menu-section-title">
+                            {formatMessage({ id: "comparisonSettings" })}
+                        </h4>
+
+                        <div className="setting-group">
+                            <label className="setting-label">{formatMessage({ id: "comparisonLimit" })}</label>
+                            <div className="comparison-limit-buttons">
+                                {comparisonOptions.map((num) => (
+                                    <button
+                                        key={num}
+                                        className={`comparison-limit-btn ${comparisonLimit === num ? 'active' : ''}`}
+                                        onClick={() => handleComparisonLimitChange(num)}
+                                    >
+                                        {num}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Lista ulubionych tłumaczeń */}
+                    <div className="side-menu-section">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                            <h4 className="side-menu-section-title mb-0">
+                                {formatMessage({ id: "favoriteTranslations" })}
+                            </h4>
+                            {/* Counter moved here */}
+                            <span className="badge bg-light text-dark">
+                                {formatMessage({ id: "availableTranslationsCounter" })} {translations.length}
+                            </span>
+                        </div>
+
+                        <p className="setting-hint">
+                            {formatMessage({ id: "favoriteTranslationsComparisonHint" })}
+                        </p>
+
+                        {favoriteTranslationsList.length > 0 ? (
+                            <div className="favorite-translations-list">
+                                {favoriteTranslationsList.map((t) => (
+                                    <div
+                                        key={t.id}
+                                        className="favorite-translation-item is-favorite"
+                                        onClick={() => toggleFavorite(t.id)}
+                                    >
+                                        <span className="favorite-star">★</span>
+                                        <span className="favorite-name">{t.name}</span>
+                                        <button
+                                            className="favorite-remove"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleFavorite(t.id);
+                                            }}
+                                            title={formatMessage({ id: "removeFromFavorites" })}
+                                        >
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <line x1="18" y1="6" x2="6" y2="18" />
+                                                <line x1="6" y1="6" x2="18" y2="18" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="no-favorites-hint">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                                </svg>
+                                <p>{formatMessage({ id: "noFavorites" })}</p>
+                                <span>{formatMessage({ id: "noFavoritesHint" })}</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Backup tab */}
+            {activeTab === 'backup' && (
+                <div className="side-menu-section animate-slide-up">
+                    <h4 className="side-menu-section-title">
+                        {formatMessage({ id: "notesBackup" })}
+                    </h4>
+
                     <p className="setting-hint">
-                        {formatMessage({ id: "favoriteTranslationsHint" })}
+                        {formatMessage({ id: "notesCount" }, { count: getNotesCount() })}
                     </p>
 
-                    <div className="favorite-translations-list">
-                        {translations.map((t) => (
-                            <div
-                                key={t.id}
-                                className={`favorite-translation-item ${favoriteTranslations.includes(t.id) ? 'is-favorite' : ''}`}
-                                onClick={() => toggleFavorite(t.id)}
+                    <div className="setting-group">
+                        <div className="notes-backup-buttons">
+                            <button
+                                className="backup-btn backup-export"
+                                onClick={handleExportNotes}
                             >
-                                <span className="favorite-star">
-                                    {favoriteTranslations.includes(t.id) ? '★' : '☆'}
-                                </span>
-                                <span className="favorite-name">{t.name}</span>
-                            </div>
-                        ))}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                {formatMessage({ id: "exportNotes" })}
+                            </button>
+
+                            <button
+                                className="backup-btn backup-import"
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                {formatMessage({ id: "importNotes" })}
+                            </button>
+
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept=".json"
+                                onChange={handleImportNotes}
+                                style={{ display: 'none' }}
+                            />
+                        </div>
+
+                        {importStatus === 'success' && (
+                            <p className="import-status import-success">
+                                ✓ {formatMessage({ id: "importSuccess" })}
+                            </p>
+                        )}
+                        {importStatus === 'error' && (
+                            <p className="import-status import-error">
+                                ✗ {formatMessage({ id: "importError" })}
+                            </p>
+                        )}
                     </div>
                 </div>
             )}
@@ -343,4 +507,4 @@ const DisplaySettings = ({ fontSize, setFontSize, fontFamily, setFontFamily, tra
     );
 };
 
-export { SideMenu, SideMenuTab, DisplaySettings, getComparisonLimit, getFavoriteTranslations };
+export { SideMenu, SideMenuTab, DisplaySettings, getComparisonLimit, getFavoriteTranslations, saveFavoriteTranslations };

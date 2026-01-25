@@ -8,29 +8,15 @@ const StatusBar = ({ translations, setLocaleAndUpdateHistory }) => {
     return (
         <footer>
             <div className="container">
-                <div className="row">
-                    <div className="col-4">
-                        <LanguageSelector
-                            setLocaleAndUpdateHistory={
-                                setLocaleAndUpdateHistory
-                            }
-                        />
-                    </div>
-                    <div className="col-4 text-center">
-                        <div className="d-none d-sm-inline">
-                            {formatMessage({
-                                id: "availableTranslationsCounter",
-                            })}{" "}
-                        </div>
-                        {translations.length}
-                    </div>
-                    <div className="col-4 text-end">
+                <div className="row justify-content-center">
+                    <div className="col-12 text-center text-muted small py-1">
                         <a
                             href="/assets/changelog.txt"
                             target="_blank"
                             title={formatMessage({ id: "changelogLink" })}
+                            className="text-muted text-decoration-none"
                         >
-                            changelog.txt
+                            rBiblia Web - changelog
                         </a>
                     </div>
                 </div>

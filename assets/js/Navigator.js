@@ -10,6 +10,7 @@ export default function Navigator({
     structure,
     chapters,
     isStructureLoading,
+    listsLoading,
     changeSelectedTranslation,
     changeSelectedBook,
     changeSelectedChapter,
@@ -28,6 +29,7 @@ export default function Navigator({
     onOpenNotes,
     onOpenSearch,
     onOpenSettings,
+    className = "",
 }) {
     const isNextChapterOrBookAvailable =
         isNextChapterAvailable() || isNextBookAvailable();
@@ -37,13 +39,14 @@ export default function Navigator({
     const handlePrevChapter = useCallback(() => prevChapter(), [prevChapter]);
 
     return (
-        <header className="container sticky-top pt-2 pb-2 user-select-none">
+        <header className={`container sticky-top pt-2 pb-2 user-select-none ${className}`}>
             <div className="row align-items-center">
                 <div className="col-12 col-lg-3">
                     <TranslationSelector
                         selectedTranslation={selectedTranslation}
                         translations={translations}
                         changeSelectedTranslation={changeSelectedTranslation}
+                        isLoading={listsLoading}
                     />
                 </div>
 
@@ -87,10 +90,8 @@ export default function Navigator({
                         title="Wybierz księgę"
                     >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect x="3" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="14" width="7" height="7"></rect>
-                            <rect x="3" y="14" width="7" height="7"></rect>
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                         </svg>
                     </button>
                     <button

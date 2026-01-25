@@ -1,0 +1,102 @@
+@use "sass:math";
+
+@mixin glassmorphism-panel($opacity: 0.85, $blur: 16px) {
+    background: rgba(255, 255, 255, $opacity);
+    backdrop-filter: blur($blur);
+    -webkit-backdrop-filter: blur($blur);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+
+    @include dark-mode {
+        background: rgba(30, 30, 30, $opacity);
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    }
+}
+
+@mixin interactive-scale($scale: 0.96) {
+    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+
+    &:active:not(:disabled) {
+        transform: scale($scale);
+    }
+}
+
+@mixin smooth-entrance-slide-up {
+    animation: slideUpSpring 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUpSpring {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+// Fluid Typography Mixin
+// Uses clamp() to scale text smoothly between min and max viewports
+@mixin fluid-text($min-size, $max-size, $min-vw: 320px, $max-vw: 1200px) {
+    font-size: $min-size;
+
+    // Note: We use a simplified clamp here for compatibility
+    // Ideally: clamp(min, val, max)
+    @media screen and (min-width: $min-vw) {
+        font-size: calc(#{$min-size} + #{strip-unit($max-size - $min-size)} * ((100vw - #{$min-vw}) / #{strip-unit($max-vw - $min-vw)}));
+    }
+
+    @media screen and (min-width: $max-vw) {
+        font-size: $max-size;
+    }
+}
+
+@function strip-unit($number) {
+    @if type-of($number)=='number' and not unitless($number) {
+        @return math.div($number, ($number * 0 + 1));
+    }
+
+    @return $number;
+}
+
+// Improved focus ring for accessibility
+@mixin focus-ring {
+    &:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(162, 134, 93, 0.4); // Gold-ish color with opacity
+    }
+}
+
+// Theme Mixin to handle System/Light/Dark logic
+@mixin dark-mode {
+    @if & {
+
+        // Nested context
+        @media (prefers-color-scheme: dark) {
+            html:not([data-theme='light']) & {
+                @content;
+            }
+        }
+
+        html[data-theme='dark'] & {
+            @content;
+        }
+    }
+
+    @else {
+
+        // Root context
+        @media (prefers-color-scheme: dark) {
+            html:not([data-theme='light']) {
+                @content;
+            }
+        }
+
+        html[data-theme='dark'] {
+            @content;
+        }
+    }
+}

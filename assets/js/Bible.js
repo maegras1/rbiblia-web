@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { getSigla } from "./bookSigla";
 import Navigator from "./Navigator";
 import Reader from "./Reader";
 import StatusBar from "./StatusBar";
@@ -16,6 +17,7 @@ import { SideMenu, SideMenuTab, DisplaySettings } from "./SideMenu";
 import { NotesPanel, NoteEditor } from "./Notes";
 import SearchPanel from "./SearchPanel";
 import useVersesCache from "./useVersesCache";
+import useScrollDirection from "./useScrollDirection";
 
 const Bible = ({ intl, setLocale }) => {
     const [error, setError] = useState(null);
@@ -44,6 +46,10 @@ const Bible = ({ intl, setLocale }) => {
         return localStorage.getItem('rbiblia-font-size') || 'medium';
     });
 
+    // Immersive Mode (hide nav on scroll)
+    const isNavVisible = useScrollDirection();
+
+
     // Font family (saved to localStorage)
     const [fontFamily, setFontFamily] = useState(() => {
         return localStorage.getItem('rbiblia-font-family') || 'serif';
@@ -60,6 +66,26 @@ const Bible = ({ intl, setLocale }) => {
         };
         document.documentElement.style.setProperty('--verse-font-size', sizeMap[fontSize]);
     }, [fontSize]);
+
+
+
+    // Theme State (saved to localStorage)
+    // Values: 'system', 'light', 'dark'
+    const [theme, setTheme] = useState(() => {
+        return localStorage.getItem('rbiblia-theme') || 'system';
+    });
+
+    // Apply Theme Side Effect
+    useEffect(() => {
+        localStorage.setItem('rbiblia-theme', theme);
+
+        const root = document.documentElement;
+        if (theme === 'system') {
+            root.removeAttribute('data-theme');
+        } else {
+            root.setAttribute('data-theme', theme);
+        }
+    }, [theme]);
 
     // Save font family to localStorage and apply to CSS variable
     useEffect(() => {
@@ -324,6 +350,7 @@ const Bible = ({ intl, setLocale }) => {
         }
     }, [selectedBook]);
 
+    // Start critical fetches immediately on mount/change, independent of lists
     useEffect(() => {
         const fetchStructure = async () => {
             try {
@@ -343,10 +370,9 @@ const Bible = ({ intl, setLocale }) => {
                 setIsStructureLoading(false);
             }
         };
-        if (!isBooksLoading && !isTranslationsLoading && !error) {
-            fetchStructure();
-        }
-    }, [isBooksLoading, isTranslationsLoading, selectedTranslation]);
+        // Fetch structure immediately when translation changes or locale changes
+        fetchStructure();
+    }, [selectedTranslation, intl.locale]);
 
     // Swipe navigation - disabled when overlays are open
     useSwipeNavigation(
@@ -370,9 +396,8 @@ const Bible = ({ intl, setLocale }) => {
             />
         );
     }
-    if (isTranslationsLoading || isBooksLoading) {
-        return <AppLoading />;
-    }
+    // Note: removed full-App loading block to allow render while lists load
+    // if (isTranslationsLoading || isBooksLoading) { ... }
 
     return (
         <>
@@ -385,6 +410,7 @@ const Bible = ({ intl, setLocale }) => {
                 structure={structure}
                 chapters={chapters}
                 isStructureLoading={isStructureLoading}
+                listsLoading={isTranslationsLoading || isBooksLoading}
                 changeSelectedTranslation={changeSelectedTranslation}
                 changeSelectedBook={changeSelectedBook}
                 changeSelectedChapter={changeSelectedChapter}
@@ -400,6 +426,7 @@ const Bible = ({ intl, setLocale }) => {
                 onOpenNotes={() => setIsNotesOpen(true)}
                 onOpenSearch={() => setIsSearchOpen(true)}
                 onOpenSettings={() => setIsSideMenuOpen(true)}
+                className={isNavVisible ? "" : "nav-hidden-header"}
             />
             {isSelectionOpen && (
                 <SelectionGrid
@@ -418,6 +445,8 @@ const Bible = ({ intl, setLocale }) => {
                 <ComparisonGrid
                     verseId={comparedVerse}
                     bookId={selectedBook}
+                    bookName={books[selectedBook]?.name}
+                    bookSigil={getSigla(selectedBook)}
                     chapterId={selectedChapter}
                     translations={translations}
                     currentTranslation={selectedTranslation}
@@ -453,11 +482,9 @@ const Bible = ({ intl, setLocale }) => {
                 isNextAvailable={isNextChapterAvailable() || isNextBookAvailable()}
                 currentBook={books[selectedBook]?.name}
                 currentChapter={selectedChapter}
+                className={isNavVisible ? "" : "nav-hidden-bottom"}
             />
-            <StatusBar
-                setLocaleAndUpdateHistory={setLocaleAndUpdateHistory}
-                translations={translations}
-            />
+            <StatusBar />
 
             {/* Panel notatek */}
             <NotesPanel
@@ -485,7 +512,10 @@ const Bible = ({ intl, setLocale }) => {
             />
 
             {/* Boczna zakładka i menu */}
-            <SideMenuTab onClick={() => setIsSideMenuOpen(true)} />
+            <SideMenuTab
+                onClick={() => setIsSideMenuOpen(true)}
+                className={isNavVisible ? "" : "nav-hidden-fab"}
+            />
             <SideMenu
                 isOpen={isSideMenuOpen}
                 onClose={() => setIsSideMenuOpen(false)}
@@ -496,6 +526,9 @@ const Bible = ({ intl, setLocale }) => {
                     fontFamily={fontFamily}
                     setFontFamily={setFontFamily}
                     translations={translations}
+                    setLocaleAndUpdateHistory={setLocaleAndUpdateHistory}
+                    theme={theme}
+                    setTheme={setTheme}
                 />
             </SideMenu>
 

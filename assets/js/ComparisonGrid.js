@@ -5,6 +5,8 @@ import { getComparisonLimit, getFavoriteTranslations } from "./SideMenu";
 const ComparisonGrid = ({
     verseId,
     bookId,
+    bookName,
+    bookSigil,
     chapterId,
     currentTranslation,
     translations,
@@ -102,6 +104,26 @@ const ComparisonGrid = ({
         setSelectedTranslations(newSelections);
     }, [comparisonLimit]);
 
+    // Convert to integers for comparison
+    const currentVerseNum = parseInt(verseId, 10);
+    const totalVersesNum = parseInt(totalVerses, 10);
+
+    // Navigation handlers
+    const handlePrevVerse = useCallback(() => {
+        if (currentVerseNum > 1 && onNavigateVerse) {
+            onNavigateVerse('prev');
+        }
+    }, [currentVerseNum, onNavigateVerse]);
+
+    const handleNextVerse = useCallback(() => {
+        if (currentVerseNum < totalVersesNum && onNavigateVerse) {
+            onNavigateVerse('next');
+        }
+    }, [currentVerseNum, totalVersesNum, onNavigateVerse]);
+
+    const canGoPrev = currentVerseNum > 1;
+    const canGoNext = currentVerseNum < totalVersesNum;
+
     // Keyboard navigation
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -118,7 +140,7 @@ const ComparisonGrid = ({
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [verseId, totalVerses]);
+    }, [handlePrevVerse, handleNextVerse, onClose]);
 
     // Handle translation selection change for a specific slot
     const handleTranslationChange = (index, translationId) => {
@@ -130,26 +152,6 @@ const ComparisonGrid = ({
             fetchTranslationVerse(translationId, verseId);
         }
     };
-
-    // Convert to integers for comparison
-    const currentVerseNum = parseInt(verseId, 10);
-    const totalVersesNum = parseInt(totalVerses, 10);
-
-    // Navigation handlers
-    const handlePrevVerse = () => {
-        if (currentVerseNum > 1 && onNavigateVerse) {
-            onNavigateVerse('prev');
-        }
-    };
-
-    const handleNextVerse = () => {
-        if (currentVerseNum < totalVersesNum && onNavigateVerse) {
-            onNavigateVerse('next');
-        }
-    };
-
-    const canGoPrev = currentVerseNum > 1;
-    const canGoNext = currentVerseNum < totalVersesNum;
 
     // Get available translations for a specific selector
     const getAvailableTranslations = (currentSlotIndex) => {
@@ -238,8 +240,8 @@ const ComparisonGrid = ({
     };
 
     return (
-        <div className="selection-overlay comparison-overlay">
-            <div className="selection-content container">
+        <div className="selection-overlay comparison-overlay" onClick={onClose}>
+            <div className="selection-content container" onClick={e => e.stopPropagation()}>
                 <div className="selection-header d-flex justify-content-between align-items-center mb-4 pt-4">
                     {/* Navigation and title */}
                     <div className="comparison-nav-header">
@@ -255,7 +257,9 @@ const ComparisonGrid = ({
                         </button>
 
                         <h2 className="comparison-title">
-                            {formatMessage({ id: "compareVerse" })} {chapterId}:{verseId}
+                            <span className="comparison-title-full">{bookName}</span>
+                            <span className="comparison-title-sigil">{bookSigil}</span>
+                            {" "}{chapterId}:{verseId}
                         </h2>
 
                         <button

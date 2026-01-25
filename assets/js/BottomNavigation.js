@@ -11,11 +11,12 @@ const BottomNavigation = ({
     isNextAvailable,
     currentBook,
     currentChapter,
+    className = "",
 }) => {
     const { formatMessage } = useIntl();
 
     return (
-        <nav className="bottom-nav d-lg-none">
+        <nav className={`bottom-nav d-lg-none ${className}`}>
             {/* Strzałka w lewo - skrajnie lewa pozycja */}
             <button
                 className="bottom-nav-btn bottom-nav-arrow"
