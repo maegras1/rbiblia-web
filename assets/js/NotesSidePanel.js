@@ -13,21 +13,20 @@ const NotesSidePanel = ({
     const [chapterNote, setChapterNote] = useState("");
     const [verseNotes, setVerseNotes] = useState({});
 
-    // Klucz do localStorage dla notatki rozdziału
+    // LocalStorage key for chapter note
     const chapterKey = `note_chapter_${bookId}_${chapterId}`;
-    // Klucz prefiks dla notatek wersetów
+    // Prefix key for verse notes
     const verseKeyPrefix = `note_verse_${bookId}_${chapterId}_`;
 
-    // Ładowanie notatek przy otwarciu lub zmianie rozdziału
+    // Load notes when opening or changing chapter
     useEffect(() => {
         if (isOpen) {
             const savedChapterNote = localStorage.getItem(chapterKey) || "";
             setChapterNote(savedChapterNote);
 
-            // Ładowanie notatek wersetów
+            // Load verse notes
             const loadedVerseNotes = {};
-            // To jest uproszczone - w prawdziwej aplikacji iterowalibyśmy po znanych wersetach
-            // Tutaj szukamy w localStorage kluczy pasujących do wzorca
+            // This is simplified - we search localStorage for keys matching the pattern
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if (key.startsWith(verseKeyPrefix)) {
@@ -80,7 +79,7 @@ const NotesSidePanel = ({
                 </div>
 
                 <div className="notes-content">
-                    {/* Sekcja notatki do rozdziału */}
+                    {/* Chapter note section */}
                     <div className="notes-section">
                         <label className="notes-label">
                             {formatMessage({ id: "chapterNote" })}
@@ -93,13 +92,13 @@ const NotesSidePanel = ({
                         />
                     </div>
 
-                    {/* Sekcja notatek wersetów (jeśli istnieją lub edytujemy konkretny) */}
+                    {/* Verse notes section (existing ones or current edit) */}
                     <div className="notes-section">
                         <label className="notes-label">
                             {formatMessage({ id: "verseNotes" })}
                         </label>
 
-                        {/* Jeśli wybrano konkretny werset do edycji */}
+                        {/* If a specific verse is selected for editing */}
                         {activeVerseId && (
                             <div className="verse-note-editor active">
                                 <div className="verse-badge">{activeVerseId}</div>
@@ -113,7 +112,7 @@ const NotesSidePanel = ({
                             </div>
                         )}
 
-                        {/* Lista pozostałych notatek wersetów */}
+                        {/* List of remaining verse notes */}
                         {Object.entries(verseNotes).map(([vId, text]) => {
                             if (vId === activeVerseId || !text) return null;
                             return (

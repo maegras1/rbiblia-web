@@ -3,7 +3,7 @@
  * Used for compact display on mobile devices
  */
 const bookSigla = {
-    // Stary Testament
+    // Old Testament
     gen: "Rdz",
     exo: "Wj",
     lev: "Kpł",
@@ -54,7 +54,7 @@ const bookSigla = {
     hag: "Ag",
     zec: "Za",
     mal: "Ml",
-    // Nowy Testament
+    // New Testament
     mat: "Mt",
     mar: "Mk",
     luk: "Łk",

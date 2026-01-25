@@ -41,8 +41,8 @@ const FontSizeControl = () => {
             <button
                 className="font-size-toggle"
                 onClick={() => setIsExpanded(!isExpanded)}
-                aria-label="Zmień rozmiar czcionki"
-                title="Zmień rozmiar czcionki"
+                aria-label="Change font size"
+                title="Change font size"
             >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M4 7V4h16v3" />
@@ -57,14 +57,14 @@ const FontSizeControl = () => {
                         className="font-size-btn"
                         onClick={decrease}
                         disabled={fontSize <= MIN_SIZE}
-                        aria-label="Zmniejsz czcionkę"
+                        aria-label="Decrease font size"
                     >
                         A-
                     </button>
                     <button
                         className="font-size-value"
                         onClick={reset}
-                        title="Przywróć domyślny"
+                        title="Reset to default"
                     >
                         {percentage}%
                     </button>
@@ -72,7 +72,7 @@ const FontSizeControl = () => {
                         className="font-size-btn"
                         onClick={increase}
                         disabled={fontSize >= MAX_SIZE}
-                        aria-label="Zwiększ czcionkę"
+                        aria-label="Increase font size"
                     >
                         A+
                     </button>

@@ -37,7 +37,7 @@ const SideMenu = ({ isOpen, onClose, children }) => {
     );
 };
 
-// Przycisk-zakładka przyklejony do krawędzi - niżej na ekranie
+// Sticky tab button on the right edge - lower on the screen
 const SideMenuTab = ({ onClick, className = "" }) => {
     const { formatMessage } = useIntl();
 
@@ -76,7 +76,7 @@ const saveFavoriteTranslations = (favorites) => {
     localStorage.setItem('rbiblia_favorite_translations', JSON.stringify(favorites));
 };
 
-// Sekcja ustawień z zakładkami
+// Settings section with tabs
 const DisplaySettings = ({
     fontSize,
     setFontSize,
@@ -120,17 +120,16 @@ const DisplaySettings = ({
         {
             id: 'text',
             icon: (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="4 20 10 4 16 20"></polyline>
-                    <line x1="6" y1="16" x2="14" y2="16"></line>
-                    <circle cx="18" cy="16" r="4"></circle>
-                    <line x1="22" y1="12" x2="22" y2="20"></line>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 20h4l1-3h6l1 3h4" />
+                    <path d="M9 17l3-9 3 9" />
+                    <path d="M7 12h10" />
                 </svg>
             ),
             label: formatMessage({ id: "textSettings" })
         },
         {
-            id: 'language', // New Language Tab
+            id: 'language',
             icon: (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="10"></circle>
@@ -152,10 +151,10 @@ const DisplaySettings = ({
         {
             id: 'backup',
             icon: (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1-2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                    <polyline points="7 3 7 8 15 8"></polyline>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                    <polyline points="17 21 17 13 7 13 7 21" />
+                    <polyline points="7 3 7 8 15 8" />
                 </svg>
             ),
             label: formatMessage({ id: "notesBackup" })
@@ -178,7 +177,7 @@ const DisplaySettings = ({
         saveFavoriteTranslations(newFavorites);
     };
 
-    // Eksport notatek do pliku JSON
+    // Export notes to a JSON file
     const handleExportNotes = () => {
         const notes = loadNotes();
         const generalNotes = JSON.parse(localStorage.getItem('rbiblia_general_notes') || '[]');
@@ -201,7 +200,7 @@ const DisplaySettings = ({
         URL.revokeObjectURL(url);
     };
 
-    // Import notatek z pliku JSON
+    // Import notes from a JSON file
     const handleImportNotes = (event) => {
         const file = event.target.files[0];
         if (!file) return;
@@ -211,20 +210,20 @@ const DisplaySettings = ({
             try {
                 const importData = JSON.parse(e.target.result);
 
-                // Walidacja struktury
+                // Structure validation
                 if (!importData.verseNotes && !importData.generalNotes) {
                     throw new Error('Invalid file format');
                 }
 
-                // Merge z istniejącymi notatkami
+                // Merge with existing notes
                 const existingNotes = loadNotes();
                 const existingGeneral = JSON.parse(localStorage.getItem('rbiblia_general_notes') || '[]');
 
-                // Merge verse notes (nowe nadpisują istniejące)
+                // Merge verse notes (new items overwrite existing ones)
                 const mergedNotes = { ...existingNotes, ...importData.verseNotes };
                 saveNotes(mergedNotes);
 
-                // Merge general notes (dodaj nowe na początek, unikając duplikatów)
+                // Merge general notes (add new items at the beginning, avoiding duplicates)
                 if (importData.generalNotes && Array.isArray(importData.generalNotes)) {
                     const existingIds = new Set(existingGeneral.map(n => n.id));
                     const newNotes = importData.generalNotes.filter(n => !existingIds.has(n.id));
@@ -246,14 +245,14 @@ const DisplaySettings = ({
         event.target.value = '';
     };
 
-    // Zlicz notatki
+    // Count total notes
     const getNotesCount = () => {
         const notes = loadNotes();
         const generalNotes = JSON.parse(localStorage.getItem('rbiblia_general_notes') || '[]');
         return Object.keys(notes).length + generalNotes.length;
     };
 
-    // Filtruj tylko ulubione tłumaczenia
+    // Filter only favorite translations
     const favoriteTranslationsList = translations.filter(t => favoriteTranslations.includes(t.id));
 
     return (
@@ -279,7 +278,7 @@ const DisplaySettings = ({
                         {formatMessage({ id: "displaySettings" })}
                     </h4>
 
-                    {/* Motyw (Theme) */}
+                    {/* Theme (Light/Dark/System) */}
                     {setTheme && (
                         <div className="setting-group">
                             <label className="setting-label">{formatMessage({ id: "theme" })}</label>
@@ -299,7 +298,7 @@ const DisplaySettings = ({
                         </div>
                     )}
 
-                    {/* Rozmiar czcionki */}
+                    {/* Font size setting */}
                     <div className="setting-group">
                         <label className="setting-label">{formatMessage({ id: "fontSize" })}</label>
                         <div className="font-size-buttons">
@@ -316,7 +315,7 @@ const DisplaySettings = ({
                         </div>
                     </div>
 
-                    {/* Rodzaj czcionki */}
+                    {/* Font family setting */}
                     {setFontFamily && (
                         <div className="setting-group">
                             <label className="setting-label">{formatMessage({ id: "fontFamily" })}</label>
@@ -367,7 +366,7 @@ const DisplaySettings = ({
             {/* Favorites tab */}
             {activeTab === 'favorites' && (
                 <div className="animate-slide-up">
-                    {/* Sekcja porównywania tłumaczeń */}
+                    {/* Translation comparison section */}
                     <div className="side-menu-section">
                         <h4 className="side-menu-section-title">
                             {formatMessage({ id: "comparisonSettings" })}
@@ -389,7 +388,7 @@ const DisplaySettings = ({
                         </div>
                     </div>
 
-                    {/* Lista ulubionych tłumaczeń */}
+                    {/* Favorite translations list */}
                     <div className="side-menu-section">
                         <div className="d-flex justify-content-between align-items-center mb-2">
                             <h4 className="side-menu-section-title mb-0">

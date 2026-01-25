@@ -29,7 +29,7 @@ const Bible = ({ intl, setLocale }) => {
     const [isSelectionOpen, setIsSelectionOpen] = useState(false);
     const [comparedVerse, setComparedVerse] = useState(null);
 
-    // Cache wersetów dla szybszego ładowania
+    // Verses cache for faster loading
     const versesCache = useVersesCache(intl.locale);
 
     // Side menu states
@@ -114,7 +114,7 @@ const Bible = ({ intl, setLocale }) => {
     );
 
     useEffect(() => {
-        // Jeśli użytkownik wchodzi na stronę główną (ścieżka /), otwórz wybór ksiąg
+        // If the user enters the homepage (path /), open book selection
         if (window.location.pathname === "/" || window.location.pathname === "") {
             setIsSelectionOpen(true);
         }
@@ -142,7 +142,7 @@ const Bible = ({ intl, setLocale }) => {
         setShowVerses(false);
         setIsStructureLoading(true);
         keepChapterIfPossible.current = true;
-        versesCache.clearCache();  // Wyczyść cache przy zmianie tłumaczenia
+        versesCache.clearCache();  // Clear cache when translation changes
         setSelectedTranslation(newTranslation);
     }, [versesCache]);
 
@@ -202,7 +202,7 @@ const Bible = ({ intl, setLocale }) => {
             newSelectedChapter
         );
 
-        // Sprawdź czy mamy dane w cache - jeśli tak, pokaż natychmiast
+        // Check if data is in cache - if yes, show immediately
         const isInCache = versesCache.isInCache(selectedTranslation, selectedBook, newSelectedChapter);
 
         if (!isInCache) {
@@ -220,7 +220,7 @@ const Bible = ({ intl, setLocale }) => {
             setVerses(result.data);
             setShowVerses(true);
 
-            // Prefetch następnych i poprzednich rozdziałów w tle
+            // Prefetch next and previous chapters in the background
             versesCache.prefetchAdjacent(
                 selectedTranslation,
                 selectedBook,
@@ -486,7 +486,7 @@ const Bible = ({ intl, setLocale }) => {
             />
             <StatusBar />
 
-            {/* Panel notatek */}
+            {/* Notes Panel */}
             <NotesPanel
                 isOpen={isNotesOpen}
                 onClose={() => setIsNotesOpen(false)}
@@ -499,7 +499,7 @@ const Bible = ({ intl, setLocale }) => {
                 }}
             />
 
-            {/* Panel wyszukiwania */}
+            {/* Search Panel */}
             <SearchPanel
                 isOpen={isSearchOpen}
                 onClose={() => setIsSearchOpen(false)}
@@ -511,7 +511,7 @@ const Bible = ({ intl, setLocale }) => {
                 }}
             />
 
-            {/* Boczna zakładka i menu */}
+            {/* Side tab and menu */}
             <SideMenuTab
                 onClick={() => setIsSideMenuOpen(true)}
                 className={isNavVisible ? "" : "nav-hidden-fab"}
@@ -532,7 +532,7 @@ const Bible = ({ intl, setLocale }) => {
                 />
             </SideMenu>
 
-            {/* Edytor notatek */}
+            {/* Note Editor */}
             <NoteEditor
                 isOpen={editingNoteVerse !== null}
                 onClose={() => setEditingNoteVerse(null)}
@@ -543,7 +543,7 @@ const Bible = ({ intl, setLocale }) => {
                 bookName={books[selectedBook]?.name}
             />
 
-            {/* Toast dla błędów nieblokujących */}
+            {/* Toast for non-blocking errors */}
             {toastError && (
                 <ErrorToast
                     message={toastError}

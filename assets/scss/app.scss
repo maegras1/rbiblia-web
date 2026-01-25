@@ -798,14 +798,14 @@ footer {
   white-space: nowrap;
 }
 
-// Dodaj padding na dole main, aby tekst nie był zasłonięty przez bottom nav
+// Add padding at the bottom of main to prevent overlap with bottom nav
 @media (max-width: 991.98px) {
   main {
     padding-bottom: 90px !important;
   }
 
   footer {
-    display: none; // Ukryj footer na mobile - używamy Bottom Navigation
+    display: none; // Hide footer on mobile - using Bottom Navigation instead
   }
 }
 
@@ -997,11 +997,11 @@ footer {
 // Side Menu Styles
 // ---------------------------------------------------------
 
-// Zakładka przyklejona do prawej krawędzi - przesunięta niżej
+// Sticky tab button on the right edge - shifted lower
 .side-menu-tab {
   position: fixed;
   right: 0;
-  top: 70%; // Niżej na ekranie
+  top: 70%; // Lower on the screen
   transform: translateY(-50%);
   z-index: 1100;
   width: 36px;
@@ -1033,10 +1033,10 @@ footer {
     transform: translateY(-50%) scale(0.95);
   }
 
-  // Na mobile jeszcze niżej
+  // Even lower on mobile
   @media (max-width: 991.98px) {
     top: auto;
-    bottom: 110px; // Nad bottom navigation
+    bottom: 110px; // Above bottom navigation
     transform: none;
 
     &:active {
@@ -1044,7 +1044,7 @@ footer {
     }
   }
 
-  // Ukryj na desktopie - mamy przyciski w nawigacji
+  // Hide on desktop - header buttons are used instead
   @media (min-width: 992px) {
     display: none;
   }
@@ -1069,13 +1069,13 @@ footer {
   }
 }
 
-// Panel wysuwany
+// Sliding panel (Side Menu)
 .side-menu-panel {
   position: fixed;
   top: 0;
-  right: -66.67%;
-  width: 66.67%;
-  max-width: 400px;
+  right: -350px;
+  width: 350px;
+  max-width: 90%;
   height: 100%;
   background: white;
   z-index: 2100;
@@ -1396,21 +1396,25 @@ footer {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  padding: 0.9rem 1rem;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: all 0.2s ease;
   border-bottom: 1px solid #eee;
+  border-radius: 8px;
+  margin: 4px;
 
   &:last-child {
     border-bottom: none;
   }
 
   &:hover {
-    background: rgba($rb-header-navigator-arrow, 0.05);
+    background: rgba($rb-header-navigator-arrow, 0.08);
+    transform: translateX(4px);
   }
 
   &.is-favorite {
-    background: rgba($rb-header-navigator-arrow, 0.08);
+    background: rgba($rb-header-navigator-arrow, 0.04);
+    border: 1px solid rgba($rb-header-navigator-arrow, 0.1);
 
     .favorite-star {
       color: #fbbf24;
@@ -1424,7 +1428,8 @@ footer {
   }
 
   .favorite-name {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    font-weight: 500;
     color: #333;
   }
 
@@ -1432,15 +1437,16 @@ footer {
     border-bottom-color: #333;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.08);
     }
 
     &.is-favorite {
       background: rgba($rb-header-navigator-arrow, 0.15);
+      border-color: rgba($rb-header-navigator-arrow, 0.2);
     }
 
     .favorite-star {
-      color: #666;
+      color: #555;
     }
 
     &.is-favorite .favorite-star {
@@ -1448,12 +1454,12 @@ footer {
     }
 
     .favorite-name {
-      color: #ccc;
+      color: #ddd;
     }
   }
 }
 
-// Styl dla przycisku "bottom-nav-btn-primary" zamiast "bottom-nav-btn-center"
+// Style for "bottom-nav-btn-primary" instead of "bottom-nav-btn-center"
 .bottom-nav-btn-primary {
   color: $rb-header-navigator-arrow;
 
@@ -3105,8 +3111,9 @@ footer {
   background: white;
   border: 1px solid #ddd;
   border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.95rem;
+  padding: 0.7rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
   transition: all 0.15s ease;
 
   &:hover {
@@ -3191,7 +3198,7 @@ footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.65rem 1rem;
+  padding: 0.8rem 1rem;
   cursor: pointer;
   transition: background 0.1s ease;
 
@@ -3295,8 +3302,8 @@ footer {
 }
 
 .settings-tab {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
   border: 2px solid transparent;
   background: rgba(0, 0, 0, 0.04);
@@ -3447,16 +3454,19 @@ footer {
 // Dark Mode Legibility Overrides
 @include dark-mode {
   .badge.bg-light {
-    background-color: #444 !important; /* Dark grey for badge background */
-    color: #e0e0e0 !important; /* Light text for badge */
+    background-color: #444 !important;
+    /* Dark grey for badge background */
+    color: #e0e0e0 !important;
+    /* Light text for badge */
     border: 1px solid #555;
   }
-  
+
   .btn-outline-secondary {
     color: #ccc;
     border-color: #555;
-    
-    &:hover, &.active {
+
+    &:hover,
+    &.active {
       color: #fff;
       background-color: #555;
       border-color: #666;
@@ -3465,11 +3475,11 @@ footer {
 
   /* Language Selector Text Fix */
   .language-buttons .btn-outline-secondary {
-     color: #ddd;
-     &.active {
-        color: var(--bs-primary) !important;
-        border-color: var(--bs-primary) !important;
-     }
+    color: #ddd;
+
+    &.active {
+      color: var(--bs-primary) !important;
+      border-color: var(--bs-primary) !important;
+    }
   }
 }
-

@@ -1,4 +1,5 @@
 import React, { useCallback } from "react";
+import { useIntl } from "react-intl";
 import TranslationSelector from "./TranslationSelector";
 import BookSelector from "./BookSelector";
 import ChapterSelector from "./ChapterSelector";
@@ -31,6 +32,7 @@ export default function Navigator({
     onOpenSettings,
     className = "",
 }) {
+    const { formatMessage } = useIntl();
     const isNextChapterOrBookAvailable =
         isNextChapterAvailable() || isNextBookAvailable();
     const isPrevChapterOrBookAvailable =
@@ -87,7 +89,7 @@ export default function Navigator({
                     <button
                         className="nav-action-btn"
                         onClick={onOpenSelection}
-                        title="Wybierz księgę"
+                        title={formatMessage({ id: "selectBook" })}
                     >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -97,7 +99,7 @@ export default function Navigator({
                     <button
                         className="nav-action-btn"
                         onClick={onOpenSearch}
-                        title="Szukaj"
+                        title={formatMessage({ id: "search" })}
                     >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <circle cx="11" cy="11" r="8"></circle>
@@ -107,7 +109,7 @@ export default function Navigator({
                     <button
                         className="nav-action-btn"
                         onClick={onOpenNotes}
-                        title="Notatki"
+                        title={formatMessage({ id: "notes" })}
                     >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -117,7 +119,7 @@ export default function Navigator({
                     <button
                         className="nav-action-btn"
                         onClick={onOpenSettings}
-                        title="Ustawienia"
+                        title={formatMessage({ id: "settings" })}
                     >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <circle cx="12" cy="12" r="3"></circle>

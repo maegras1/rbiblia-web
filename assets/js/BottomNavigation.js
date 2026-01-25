@@ -17,7 +17,7 @@ const BottomNavigation = ({
 
     return (
         <nav className={`bottom-nav d-lg-none ${className}`}>
-            {/* Strzałka w lewo - skrajnie lewa pozycja */}
+            {/* Left arrow - far left position */}
             <button
                 className="bottom-nav-btn bottom-nav-arrow"
                 onClick={onPrevChapter}
@@ -29,7 +29,7 @@ const BottomNavigation = ({
                 </svg>
             </button>
 
-            {/* Notatki - lewa strona środka */}
+            {/* Notes - left of center */}
             <button
                 className="bottom-nav-btn"
                 onClick={onOpenNotes}
@@ -42,7 +42,7 @@ const BottomNavigation = ({
                 <span className="bottom-nav-label">{formatMessage({ id: "notes" })}</span>
             </button>
 
-            {/* Wybór księgi - centrum */}
+            {/* Book selection - center */}
             <button
                 className="bottom-nav-btn bottom-nav-btn-center"
                 onClick={onOpenSelection}
@@ -57,7 +57,7 @@ const BottomNavigation = ({
                 </span>
             </button>
 
-            {/* Wyszukiwanie - prawa strona środka */}
+            {/* Search - right of center */}
             <button
                 className="bottom-nav-btn"
                 onClick={onOpenSearch}
@@ -70,7 +70,7 @@ const BottomNavigation = ({
                 <span className="bottom-nav-label">{formatMessage({ id: "search" })}</span>
             </button>
 
-            {/* Strzałka w prawo - skrajnie prawa pozycja */}
+            {/* Right arrow - far right position */}
             <button
                 className="bottom-nav-btn bottom-nav-arrow"
                 onClick={onNextChapter}

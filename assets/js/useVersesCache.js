@@ -1,30 +1,30 @@
 import { useRef, useCallback } from "react";
 
 /**
- * Hook do cachowania wersetów - zapobiega ponownemu pobieraniu już pobranych rozdziałów
- * i umożliwia prefetching następnych/poprzednich rozdziałów
+ * Hook for caching verses - prevents re-fetching already downloaded chapters
+ * and enables prefetching of next/previous chapters
  */
 const useVersesCache = (locale) => {
     // Cache: Map<cacheKey, versesData>
     const cacheRef = useRef(new Map());
 
-    // Maksymalna liczba elementów w cache (aby nie zużywać za dużo pamięci)
+    // Maximum number of items in cache (to avoid excessive memory usage)
     const MAX_CACHE_SIZE = 50;
 
     /**
-     * Generuj klucz cache
+     * Generate cache key
      */
     const getCacheKey = useCallback((translation, book, chapter) => {
         return `${translation}_${book}_${chapter}`;
     }, []);
 
     /**
-     * Pobierz wersety z cache lub z API
+     * Get verses from cache or API
      */
     const getVerses = useCallback(async (translation, book, chapter) => {
         const cacheKey = getCacheKey(translation, book, chapter);
 
-        // Sprawdź cache
+        // Check cache
         if (cacheRef.current.has(cacheKey)) {
             return {
                 data: cacheRef.current.get(cacheKey),
@@ -32,16 +32,16 @@ const useVersesCache = (locale) => {
             };
         }
 
-        // Pobierz z API
+        // Fetch from API
         try {
             const response = await fetch(
                 `/api/${locale}/translation/${translation}/book/${book}/chapter/${chapter}`
             );
             const result = await response.json();
 
-            // Zapisz do cache
+            // Save to cache
             if (result.data) {
-                // Usuń najstarsze elementy jeśli cache jest pełny
+                // Remove oldest items if cache is full
                 if (cacheRef.current.size >= MAX_CACHE_SIZE) {
                     const firstKey = cacheRef.current.keys().next().value;
                     cacheRef.current.delete(firstKey);
@@ -59,17 +59,17 @@ const useVersesCache = (locale) => {
     }, [locale, getCacheKey]);
 
     /**
-     * Prefetch rozdziału w tle (nie blokuje UI)
+     * Prefetch chapter in background (non-blocking)
      */
     const prefetch = useCallback((translation, book, chapter) => {
         const cacheKey = getCacheKey(translation, book, chapter);
 
-        // Nie pobieraj jeśli już w cache
+        // Don't fetch if already in cache
         if (cacheRef.current.has(cacheKey)) {
             return;
         }
 
-        // Pobierz w tle z niskim priorytetem
+        // Fetch in background with low priority
         requestIdleCallback(() => {
             fetch(
                 `/api/${locale}/translation/${translation}/book/${book}/chapter/${chapter}`
@@ -81,13 +81,13 @@ const useVersesCache = (locale) => {
                     }
                 })
                 .catch(() => {
-                    // Cichy błąd - prefetch nie jest krytyczny
+                    // Silent error - prefetch is not critical
                 });
         }, { timeout: 2000 });
     }, [locale, getCacheKey]);
 
     /**
-     * Prefetch następnych i poprzednich rozdziałów
+     * Prefetch next and previous chapters
      */
     const prefetchAdjacent = useCallback((translation, book, chapter, structure) => {
         if (!structure || !structure[book]) return;
@@ -95,26 +95,26 @@ const useVersesCache = (locale) => {
         const chapters = structure[book];
         const currentIndex = chapters.indexOf(chapter);
 
-        // Prefetch następny rozdział
+        // Prefetch next chapter
         if (currentIndex < chapters.length - 1) {
             prefetch(translation, book, chapters[currentIndex + 1]);
         }
 
-        // Prefetch poprzedni rozdział
+        // Prefetch previous chapter
         if (currentIndex > 0) {
             prefetch(translation, book, chapters[currentIndex - 1]);
         }
     }, [prefetch]);
 
     /**
-     * Wyczyść cache (np. przy zmianie tłumaczenia)
+     * Clear cache (e.g. when translation changes)
      */
     const clearCache = useCallback(() => {
         cacheRef.current.clear();
     }, []);
 
     /**
-     * Sprawdź czy rozdział jest w cache
+     * Check if chapter is in cache
      */
     const isInCache = useCallback((translation, book, chapter) => {
         const cacheKey = getCacheKey(translation, book, chapter);
@@ -130,7 +130,7 @@ const useVersesCache = (locale) => {
     };
 };
 
-// Polyfill dla requestIdleCallback (Safari)
+// Polyfill for requestIdleCallback (Safari)
 if (typeof window !== 'undefined' && !window.requestIdleCallback) {
     window.requestIdleCallback = (cb, options) => {
         const timeout = options?.timeout || 1000;
