@@ -87,5 +87,11 @@
   "theme": "Motyw",
   "themeSystem": "Systemowy",
   "themeLight": "Jasny",
-  "themeDark": "Ciemny"
+  "themeDark": "Ciemny",
+  "scopeALL": "Wszystko",
+  "scopeOT": "Stary T.",
+  "scopeNT": "Nowy T.",
+  "noResultsInScope": "Brak wyników w wybranym zakresie",
+  "noResultsInScopeHint": "Spróbuj zmienić zakres na inny lub na Wszystko",
+  "settings": "Ustawienia"
 }

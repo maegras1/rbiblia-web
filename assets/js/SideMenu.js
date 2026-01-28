@@ -15,23 +15,7 @@ const SideMenu = ({ isOpen, onClose, children }) => {
 
             {/* Panel */}
             <div className={`side-menu-panel ${isOpen ? 'open' : ''}`}>
-                <div className="side-menu-header">
-                    <h3 className="side-menu-title">{formatMessage({ id: "menu" })}</h3>
-                    <button
-                        className="side-menu-close"
-                        onClick={onClose}
-                        aria-label={formatMessage({ id: "close" })}
-                    >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                    </button>
-                </div>
-
-                <div className="side-menu-content">
-                    {children}
-                </div>
+                {children}
             </div>
         </>
     );
@@ -85,7 +69,8 @@ const DisplaySettings = ({
     translations = [],
     setLocaleAndUpdateHistory,
     theme,
-    setTheme
+    setTheme,
+    onClose
 }) => {
     const { formatMessage, locale } = useIntl();
     const fileInputRef = useRef(null);
@@ -257,12 +242,12 @@ const DisplaySettings = ({
 
     return (
         <>
-            {/* Tab navigation */}
-            <div className="settings-tabs">
+            {/* Side Menu Dock */}
+            <div className="side-menu-dock">
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
-                        className={`settings-tab ${activeTab === tab.id ? 'active' : ''}`}
+                        className={`side-menu-dock-item ${activeTab === tab.id ? 'active' : ''}`}
                         onClick={() => setActiveTab(tab.id)}
                         title={tab.label}
                     >
@@ -271,237 +256,267 @@ const DisplaySettings = ({
                 ))}
             </div>
 
-            {/* Text settings tab */}
-            {activeTab === 'text' && (
-                <div className="side-menu-section animate-slide-up">
-                    <h4 className="side-menu-section-title">
-                        {formatMessage({ id: "displaySettings" })}
-                    </h4>
-
-                    {/* Theme (Light/Dark/System) */}
-                    {setTheme && (
-                        <div className="setting-group">
-                            <label className="setting-label">{formatMessage({ id: "theme" })}</label>
-                            <div className="language-buttons d-flex gap-2">
-                                {themes.map((t) => (
-                                    <button
-                                        key={t.value}
-                                        className={`font-family-btn ${theme === t.value ? 'active' : ''}`}
-                                        onClick={() => setTheme(t.value)}
-                                        title={t.label}
-                                    >
-                                        <span className="me-1">{t.icon}</span>
-                                        <span className="d-none d-sm-inline">{t.label}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Font size setting */}
-                    <div className="setting-group">
-                        <label className="setting-label">{formatMessage({ id: "fontSize" })}</label>
-                        <div className="font-size-buttons">
-                            {fontSizes.map((fs) => (
-                                <button
-                                    key={fs.value}
-                                    className={`font-size-btn ${fontSize === fs.value ? 'active' : ''}`}
-                                    onClick={() => setFontSize(fs.value)}
-                                    style={{ fontSize: fs.size }}
-                                >
-                                    {fs.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Font family setting */}
-                    {setFontFamily && (
-                        <div className="setting-group">
-                            <label className="setting-label">{formatMessage({ id: "fontFamily" })}</label>
-                            <div className="font-family-buttons">
-                                {fontFamilies.map((ff) => (
-                                    <button
-                                        key={ff.value}
-                                        className={`font-family-btn ${fontFamily === ff.value ? 'active' : ''}`}
-                                        onClick={() => setFontFamily(ff.value)}
-                                        style={{ fontFamily: ff.preview }}
-                                    >
-                                        {ff.label}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+            {/* Main Content Area */}
+            <div className="side-menu-main">
+                <div className="side-menu-header">
+                    <h3 className="side-menu-title">
+                        {tabs.find(t => t.id === activeTab)?.label}
+                    </h3>
+                    {onClose && (
+                        <button
+                            className="side-menu-close"
+                            onClick={onClose}
+                            aria-label={formatMessage({ id: "close" })}
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
                     )}
                 </div>
-            )}
 
-            {/* Language settings tab */}
-            {activeTab === 'language' && setLocaleAndUpdateHistory && (
-                <div className="side-menu-section animate-slide-up">
-                    <h4 className="side-menu-section-title">
-                        {formatMessage({ id: "appLanguage" })}
-                    </h4>
+                <div className="side-menu-content">
 
-                    <div className="setting-group">
-                        <label className="setting-label">{formatMessage({ id: "selectLanguage" })}</label>
-                        <div className="language-buttons d-flex flex-column gap-2">
-
-                            {['pl', 'en', 'de'].map(lang => (
-                                <button
-                                    key={lang}
-                                    className={`font-family-btn w-100 justify-content-start px-3 ${locale === lang ? 'active' : ''}`}
-                                    onClick={() => setLocaleAndUpdateHistory(lang)}
-                                >
-                                    {lang === 'pl' && "🇵🇱 Polski"}
-                                    {lang === 'en' && "🇬🇧 English"}
-                                    {lang === 'de' && "🇩🇪 Deutsch"}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Favorites tab */}
-            {activeTab === 'favorites' && (
-                <div className="animate-slide-up">
-                    {/* Translation comparison section */}
-                    <div className="side-menu-section">
-                        <h4 className="side-menu-section-title">
-                            {formatMessage({ id: "comparisonSettings" })}
-                        </h4>
-
-                        <div className="setting-group">
-                            <label className="setting-label">{formatMessage({ id: "comparisonLimit" })}</label>
-                            <div className="comparison-limit-buttons">
-                                {comparisonOptions.map((num) => (
-                                    <button
-                                        key={num}
-                                        className={`comparison-limit-btn ${comparisonLimit === num ? 'active' : ''}`}
-                                        onClick={() => handleComparisonLimitChange(num)}
-                                    >
-                                        {num}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Favorite translations list */}
-                    <div className="side-menu-section">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                            <h4 className="side-menu-section-title mb-0">
-                                {formatMessage({ id: "favoriteTranslations" })}
+                    {/* Text settings tab */}
+                    {activeTab === 'text' && (
+                        <div className="side-menu-section animate-slide-up">
+                            <h4 className="side-menu-section-title">
+                                {formatMessage({ id: "displaySettings" })}
                             </h4>
-                            {/* Counter moved here */}
-                            <span className="badge bg-light text-dark">
-                                {formatMessage({ id: "availableTranslationsCounter" })} {translations.length}
-                            </span>
-                        </div>
 
-                        <p className="setting-hint">
-                            {formatMessage({ id: "favoriteTranslationsComparisonHint" })}
-                        </p>
-
-                        {favoriteTranslationsList.length > 0 ? (
-                            <div className="favorite-translations-list">
-                                {favoriteTranslationsList.map((t) => (
-                                    <div
-                                        key={t.id}
-                                        className="favorite-translation-item is-favorite"
-                                        onClick={() => toggleFavorite(t.id)}
-                                    >
-                                        <span className="favorite-star">★</span>
-                                        <span className="favorite-name">{t.name}</span>
-                                        <button
-                                            className="favorite-remove"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleFavorite(t.id);
-                                            }}
-                                            title={formatMessage({ id: "removeFromFavorites" })}
-                                        >
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                <line x1="18" y1="6" x2="6" y2="18" />
-                                                <line x1="6" y1="6" x2="18" y2="18" />
-                                            </svg>
-                                        </button>
+                            {/* Theme (Light/Dark/System) */}
+                            {setTheme && (
+                                <div className="setting-group stagger-1">
+                                    <label className="setting-label">{formatMessage({ id: "theme" })}</label>
+                                    <div className="setting-tiles-grid">
+                                        {themes.map((t) => (
+                                            <button
+                                                key={t.value}
+                                                className={`setting-tile ${theme === t.value ? 'active' : ''}`}
+                                                onClick={() => setTheme(t.value)}
+                                                title={t.label}
+                                            >
+                                                <span className="tile-icon">{t.icon}</span>
+                                                <span className="tile-label">{t.label}</span>
+                                            </button>
+                                        ))}
                                     </div>
-                                ))}
+                                </div>
+                            )}
+
+                            {/* Font size setting */}
+                            <div className="setting-group stagger-2">
+                                <label className="setting-label">{formatMessage({ id: "fontSize" })}</label>
+                                <div className="font-size-buttons">
+                                    {fontSizes.map((fs) => (
+                                        <button
+                                            key={fs.value}
+                                            className={`font-size-btn ${fontSize === fs.value ? 'active' : ''}`}
+                                            onClick={() => setFontSize(fs.value)}
+                                            style={{ fontSize: fs.size }}
+                                        >
+                                            {fs.label}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                        ) : (
-                            <div className="no-favorites-hint">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                                </svg>
-                                <p>{formatMessage({ id: "noFavorites" })}</p>
-                                <span>{formatMessage({ id: "noFavoritesHint" })}</span>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
 
-            {/* Backup tab */}
-            {activeTab === 'backup' && (
-                <div className="side-menu-section animate-slide-up">
-                    <h4 className="side-menu-section-title">
-                        {formatMessage({ id: "notesBackup" })}
-                    </h4>
-
-                    <p className="setting-hint">
-                        {formatMessage({ id: "notesCount" }, { count: getNotesCount() })}
-                    </p>
-
-                    <div className="setting-group">
-                        <div className="notes-backup-buttons">
-                            <button
-                                className="backup-btn backup-export"
-                                onClick={handleExportNotes}
-                            >
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="7 10 12 15 17 10"></polyline>
-                                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                                </svg>
-                                {formatMessage({ id: "exportNotes" })}
-                            </button>
-
-                            <button
-                                className="backup-btn backup-import"
-                                onClick={() => fileInputRef.current?.click()}
-                            >
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="17 8 12 3 7 8"></polyline>
-                                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                                </svg>
-                                {formatMessage({ id: "importNotes" })}
-                            </button>
-
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept=".json"
-                                onChange={handleImportNotes}
-                                style={{ display: 'none' }}
-                            />
+                            {/* Font family setting */}
+                            {setFontFamily && (
+                                <div className="setting-group stagger-3">
+                                    <label className="setting-label">{formatMessage({ id: "fontFamily" })}</label>
+                                    <div className="font-family-buttons">
+                                        {fontFamilies.map((ff) => (
+                                            <button
+                                                key={ff.value}
+                                                className={`font-family-btn ${fontFamily === ff.value ? 'active' : ''}`}
+                                                onClick={() => setFontFamily(ff.value)}
+                                                style={{ fontFamily: ff.preview }}
+                                            >
+                                                {ff.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
+                    )}
 
-                        {importStatus === 'success' && (
-                            <p className="import-status import-success">
-                                ✓ {formatMessage({ id: "importSuccess" })}
+                    {/* Language settings tab */}
+                    {activeTab === 'language' && setLocaleAndUpdateHistory && (
+                        <div className="side-menu-section animate-slide-up">
+                            <h4 className="side-menu-section-title">
+                                {formatMessage({ id: "appLanguage" })}
+                            </h4>
+
+                            <div className="setting-group stagger-1">
+                                <label className="setting-label">{formatMessage({ id: "selectLanguage" })}</label>
+                                <div className="setting-tiles-grid grid-2">
+                                    {['pl', 'en', 'de'].map(lang => (
+                                        <button
+                                            key={lang}
+                                            className={`setting-tile ${locale === lang ? 'active' : ''}`}
+                                            onClick={() => setLocaleAndUpdateHistory(lang)}
+                                        >
+                                            <span className="tile-icon">
+                                                {lang === 'pl' && "🇵🇱"}
+                                                {lang === 'en' && "🇬🇧"}
+                                                {lang === 'de' && "🇩🇪"}
+                                            </span>
+                                            <span className="tile-label">
+                                                {lang === 'pl' && "Polski"}
+                                                {lang === 'en' && "English"}
+                                                {lang === 'de' && "Deutsch"}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Favorites tab */}
+                    {activeTab === 'favorites' && (
+                        <div className="animate-slide-up">
+                            {/* Translation comparison section */}
+                            <div className="side-menu-section stagger-1">
+                                <h4 className="side-menu-section-title">
+                                    {formatMessage({ id: "comparisonSettings" })}
+                                </h4>
+
+                                <div className="setting-group">
+                                    <label className="setting-label">{formatMessage({ id: "comparisonLimit" })}</label>
+                                    <div className="comparison-limit-buttons">
+                                        {comparisonOptions.map((num) => (
+                                            <button
+                                                key={num}
+                                                className={`comparison-limit-btn ${comparisonLimit === num ? 'active' : ''}`}
+                                                onClick={() => handleComparisonLimitChange(num)}
+                                            >
+                                                {num}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Favorite translations list */}
+                            <div className="side-menu-section stagger-2">
+                                <div className="d-flex justify-content-between align-items-center mb-2">
+                                    <h4 className="side-menu-section-title mb-0">
+                                        {formatMessage({ id: "favoriteTranslations" })}
+                                    </h4>
+                                    {/* Counter moved here */}
+                                    <span className="badge bg-light text-dark">
+                                        {formatMessage({ id: "availableTranslationsCounter" })} {translations.length}
+                                    </span>
+                                </div>
+
+                                <p className="setting-hint">
+                                    {formatMessage({ id: "favoriteTranslationsComparisonHint" })}
+                                </p>
+
+                                {favoriteTranslationsList.length > 0 ? (
+                                    <div className="favorite-translations-list">
+                                        {favoriteTranslationsList.map((t) => (
+                                            <div
+                                                key={t.id}
+                                                className="favorite-translation-item is-favorite"
+                                                onClick={() => toggleFavorite(t.id)}
+                                            >
+                                                <span className="favorite-star">★</span>
+                                                <span className="favorite-name">{t.name}</span>
+                                                <button
+                                                    className="favorite-remove"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleFavorite(t.id);
+                                                    }}
+                                                    title={formatMessage({ id: "removeFromFavorites" })}
+                                                >
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="no-favorites-hint">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                                        </svg>
+                                        <p>{formatMessage({ id: "noFavorites" })}</p>
+                                        <span>{formatMessage({ id: "noFavoritesHint" })}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Backup tab */}
+                    {activeTab === 'backup' && (
+                        <div className="side-menu-section animate-slide-up">
+                            <h4 className="side-menu-section-title">
+                                {formatMessage({ id: "notesBackup" })}
+                            </h4>
+
+                            <p className="setting-hint stagger-1">
+                                {formatMessage({ id: "notesCount" }, { count: getNotesCount() })}
                             </p>
-                        )}
-                        {importStatus === 'error' && (
-                            <p className="import-status import-error">
-                                ✗ {formatMessage({ id: "importError" })}
-                            </p>
-                        )}
-                    </div>
-                </div>
-            )}
+
+                            <div className="setting-group stagger-2">
+                                <div className="notes-backup-buttons">
+                                    <button
+                                        className="backup-btn backup-export"
+                                        onClick={handleExportNotes}
+                                    >
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="7 10 12 15 17 10"></polyline>
+                                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                                        </svg>
+                                        {formatMessage({ id: "exportNotes" })}
+                                    </button>
+
+                                    <button
+                                        className="backup-btn backup-import"
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="17 8 12 3 7 8"></polyline>
+                                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                                        </svg>
+                                        {formatMessage({ id: "importNotes" })}
+                                    </button>
+
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept=".json"
+                                        onChange={handleImportNotes}
+                                        style={{ display: 'none' }}
+                                    />
+                                </div>
+
+                                {importStatus === 'success' && (
+                                    <p className="import-status import-success">
+                                        ✓ {formatMessage({ id: "importSuccess" })}
+                                    </p>
+                                )}
+                                {importStatus === 'error' && (
+                                    <p className="import-status import-error">
+                                        ✗ {formatMessage({ id: "importError" })}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div> {/* end side-menu-content */}
+            </div> {/* end side-menu-main */}
         </>
     );
 };

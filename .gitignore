@@ -6,8 +6,6 @@ public_html/assets
 yarn-error.log
 .php-cs-fixer.cache
 .agent/workflows/setup.md
-.agent/skills/context-manager/SKILL.md
-.agent/skills/full-stack-orchestration-full-stack-feature/SKILL.md
-.agent/skills/ui-ux-designer/SKILL.md
+
 docs/ideas.md
-.agent/vibe-coder/SKILL.md
+

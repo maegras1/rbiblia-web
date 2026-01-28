@@ -19,5 +19,19 @@
   "prev": "Zurück",
   "next": "Weiter",
   "previousChapter": "Vorheriges Kapitel",
-  "nextChapter": "Nächstes Kapitel"
+  "nextChapter": "Nächstes Kapitel",
+  "search": "Suche",
+  "notes": "Notizen",
+  "settings": "Einstellungen",
+  "scopeALL": "Alle",
+  "scopeOT": "Altes T.",
+  "scopeNT": "Neues T.",
+  "noResultsInScope": "Keine Ergebnisse im gewählten Bereich",
+  "noResultsInScopeHint": "Versuchen Sie, den Bereich auf Alle zu ändern",
+  "searchPlaceholder": "In der Bibel suchen...",
+  "searchMinChars": "Geben Sie mindestens 3 Zeichen ein",
+  "searching": "Suche...",
+  "resultsCount": "Gefunden: {count}",
+  "noResults": "Keine Ergebnisse",
+  "noResultsHint": "Versuchen Sie es mit anderen Schlüsselwörtern"
 }

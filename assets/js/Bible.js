@@ -529,6 +529,7 @@ const Bible = ({ intl, setLocale }) => {
                     setLocaleAndUpdateHistory={setLocaleAndUpdateHistory}
                     theme={theme}
                     setTheme={setTheme}
+                    onClose={() => setIsSideMenuOpen(false)}
                 />
             </SideMenu>
 

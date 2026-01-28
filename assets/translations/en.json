@@ -88,5 +88,11 @@
   "theme": "Theme",
   "themeSystem": "System",
   "themeLight": "Light",
-  "themeDark": "Dark"
+  "themeDark": "Dark",
+  "scopeALL": "All",
+  "scopeOT": "Old T.",
+  "scopeNT": "New T.",
+  "noResultsInScope": "No results in selected scope",
+  "noResultsInScopeHint": "Try changing scope to All",
+  "settings": "Settings"
 }

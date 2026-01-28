@@ -1,5 +1,6 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useMemo } from "react";
 import { useIntl } from "react-intl";
+import { OT_BOOKS, NT_BOOKS, SEARCH_SCOPE } from "./constants";
 
 /**
  * Search Panel - Full-text search across Bible verses
@@ -17,6 +18,7 @@ const SearchPanel = ({
     const [isSearching, setIsSearching] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
     const [error, setError] = useState(null);
+    const [searchScope, setSearchScope] = useState(SEARCH_SCOPE.ALL);
     const abortControllerRef = useRef(null);
 
     // Debounced search
@@ -175,15 +177,26 @@ const SearchPanel = ({
         return result;
     };
 
-    if (!isOpen) return null;
+    // Filter results locally based on selected scope
+    const filteredResults = useMemo(() => {
+        if (searchScope === SEARCH_SCOPE.ALL) return results;
+        if (searchScope === SEARCH_SCOPE.OT) {
+            return results.filter(r => OT_BOOKS.includes(r.book));
+        }
+        if (searchScope === SEARCH_SCOPE.NT) {
+            return results.filter(r => NT_BOOKS.includes(r.book));
+        }
+        return results;
+    }, [results, searchScope]);
+
 
     return (
         <>
             {/* Overlay */}
-            <div className="search-overlay" onClick={onClose} />
+            <div className={`search-overlay ${isOpen ? 'active' : ''}`} onClick={onClose} />
 
             {/* Panel */}
-            <div className="search-panel">
+            <div className={`search-panel ${isOpen ? 'open' : ''}`}>
                 <div className="search-header">
                     <h3 className="search-title">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -233,6 +246,21 @@ const SearchPanel = ({
                     )}
                 </form>
 
+                {/* Search scope toggle */}
+                <div className="search-scope-container">
+                    <div className="search-scope-toggle">
+                        {Object.values(SEARCH_SCOPE).map(scope => (
+                            <button
+                                key={scope}
+                                className={`scope-toggle-btn ${searchScope === scope ? 'active' : ''}`}
+                                onClick={() => setSearchScope(scope)}
+                            >
+                                {formatMessage({ id: `scope${scope}` })}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
                 {/* Results */}
                 <div className="search-content">
                     {isSearching && (
@@ -266,15 +294,31 @@ const SearchPanel = ({
                         </div>
                     )}
 
-                    {!isSearching && results.length > 0 && (
+                    {!isSearching && !error && hasSearched && results.length > 0 && filteredResults.length === 0 && (
+                        <div className="search-empty">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <p>{formatMessage({ id: "noResultsInScope" })}</p>
+                            <span className="search-empty-hint">
+                                {formatMessage(
+                                    { id: "noResultsInScopeHint" },
+                                    { scope: formatMessage({ id: `scope${searchScope}` }) }
+                                )}
+                            </span>
+                        </div>
+                    )}
+
+                    {!isSearching && filteredResults.length > 0 && (
                         <>
                             <div className="search-results-header">
                                 <span className="search-results-count">
-                                    {formatMessage({ id: "resultsCount" }, { count: results.length })}
+                                    {formatMessage({ id: "resultsCount" }, { count: filteredResults.length })}
                                 </span>
                             </div>
                             <ul className="search-results">
-                                {results.map((result, index) => (
+                                {filteredResults.map((result, index) => (
                                     <li
                                         key={`${result.book}_${result.chapter}_${result.verse}_${index}`}
                                         className="search-result-item"

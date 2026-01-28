@@ -168,15 +168,13 @@ const NotesPanel = ({
         onClose();
     };
 
-    if (!isOpen) return null;
-
     return (
         <>
             {/* Overlay */}
-            <div className="notes-overlay" onClick={onClose} />
+            <div className={`notes-overlay ${isOpen ? 'active' : ''}`} onClick={onClose} />
 
             {/* Panel */}
-            <div className="notes-panel">
+            <div className={`notes-panel ${isOpen ? 'open' : ''}`}>
                 <div className="notes-header">
                     <h3 className="notes-title">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -448,12 +446,10 @@ const NoteEditor = ({
         onClose();
     };
 
-    if (!isOpen) return null;
-
     return (
         <>
-            <div className="note-editor-overlay" onClick={onClose} />
-            <div className="note-editor-modal">
+            <div className={`note-editor-overlay ${isOpen ? 'active' : ''}`} onClick={onClose} />
+            <div className={`note-editor-modal ${isOpen ? 'open' : ''}`}>
                 <div className="note-editor-header">
                     <h4 className="note-editor-title">
                         {formatMessage({ id: "noteFor" })} {bookName} {chapter}:{verse}
