@@ -93,5 +93,6 @@
   "scopeNT": "Nowy T.",
   "noResultsInScope": "Brak wyników w wybranym zakresie",
   "noResultsInScopeHint": "Spróbuj zmienić zakres na inny lub na Wszystko",
-  "settings": "Ustawienia"
+  "settings": "Ustawienia",
+  "appearance": "Wygląd"
 }

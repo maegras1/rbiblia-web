@@ -33,5 +33,6 @@
   "searching": "Suche...",
   "resultsCount": "Gefunden: {count}",
   "noResults": "Keine Ergebnisse",
-  "noResultsHint": "Versuchen Sie es mit anderen Schlüsselwörtern"
+  "noResultsHint": "Versuchen Sie es mit anderen Schlüsselwörtern",
+  "appearance": "Aussehen"
 }

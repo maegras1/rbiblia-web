@@ -105,13 +105,30 @@ const DisplaySettings = ({
         {
             id: 'text',
             icon: (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M4 20h4l1-3h6l1 3h4" />
-                    <path d="M9 17l3-9 3 9" />
-                    <path d="M7 12h10" />
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="4 7 4 4 20 4 20 7" />
+                    <line x1="9" y1="20" x2="15" y2="20" />
+                    <line x1="12" y1="4" x2="12" y2="20" />
                 </svg>
             ),
             label: formatMessage({ id: "textSettings" })
+        },
+        {
+            id: 'appearance',
+            icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" />
+                    <line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+            ),
+            label: formatMessage({ id: "appearance" })
         },
         {
             id: 'language',
@@ -282,31 +299,11 @@ const DisplaySettings = ({
                     {activeTab === 'text' && (
                         <div className="side-menu-section animate-slide-up">
                             <h4 className="side-menu-section-title">
-                                {formatMessage({ id: "displaySettings" })}
+                                {formatMessage({ id: "textSettings" })}
                             </h4>
 
-                            {/* Theme (Light/Dark/System) */}
-                            {setTheme && (
-                                <div className="setting-group stagger-1">
-                                    <label className="setting-label">{formatMessage({ id: "theme" })}</label>
-                                    <div className="setting-tiles-grid">
-                                        {themes.map((t) => (
-                                            <button
-                                                key={t.value}
-                                                className={`setting-tile ${theme === t.value ? 'active' : ''}`}
-                                                onClick={() => setTheme(t.value)}
-                                                title={t.label}
-                                            >
-                                                <span className="tile-icon">{t.icon}</span>
-                                                <span className="tile-label">{t.label}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
                             {/* Font size setting */}
-                            <div className="setting-group stagger-2">
+                            <div className="setting-group stagger-1">
                                 <label className="setting-label">{formatMessage({ id: "fontSize" })}</label>
                                 <div className="font-size-buttons">
                                     {fontSizes.map((fs) => (
@@ -324,7 +321,7 @@ const DisplaySettings = ({
 
                             {/* Font family setting */}
                             {setFontFamily && (
-                                <div className="setting-group stagger-3">
+                                <div className="setting-group stagger-2">
                                     <label className="setting-label">{formatMessage({ id: "fontFamily" })}</label>
                                     <div className="font-family-buttons">
                                         {fontFamilies.map((ff) => (
@@ -335,6 +332,35 @@ const DisplaySettings = ({
                                                 style={{ fontFamily: ff.preview }}
                                             >
                                                 {ff.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Appearance settings tab */}
+                    {activeTab === 'appearance' && (
+                        <div className="side-menu-section animate-slide-up">
+                            <h4 className="side-menu-section-title">
+                                {formatMessage({ id: "appearance" })}
+                            </h4>
+
+                            {/* Theme (Light/Dark/System) */}
+                            {setTheme && (
+                                <div className="setting-group stagger-1">
+                                    <label className="setting-label">{formatMessage({ id: "theme" })}</label>
+                                    <div className="setting-tiles-grid">
+                                        {themes.map((t) => (
+                                            <button
+                                                key={t.value}
+                                                className={`setting-tile ${theme === t.value ? 'active' : ''}`}
+                                                onClick={() => setTheme(t.value)}
+                                                title={t.label}
+                                            >
+                                                <span className="tile-icon">{t.icon}</span>
+                                                <span className="tile-label">{t.label}</span>
                                             </button>
                                         ))}
                                     </div>

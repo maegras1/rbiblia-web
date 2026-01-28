@@ -5,7 +5,6 @@ public_html/assets
 .phpunit.cache
 yarn-error.log
 .php-cs-fixer.cache
-.agent/workflows/setup.md
+.agent/
 
 docs/ideas.md
-

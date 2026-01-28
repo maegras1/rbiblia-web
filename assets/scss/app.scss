@@ -446,7 +446,7 @@ footer {
 .tile {
   background: white;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 15px 10px;
   text-align: center;
   cursor: pointer;
@@ -458,14 +458,14 @@ footer {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     border-color: $rb-header-navigator-arrow;
     background: $rb-verse-even-color;
   }
 
   &:active {
-    transform: scale(0.97) !important; // Override hover transform
+    transform: scale(0.97) !important;
   }
 
   .tile-text {
@@ -475,17 +475,18 @@ footer {
   }
 
   @include dark-mode {
-    background: #2d2d2d;
-    border-color: #444;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    background: rgba(30, 41, 59, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 
     &:hover {
-      background: #3d3d3d;
-      border-color: #666;
+      background: rgba(51, 65, 85, 0.95);
+      border-color: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
     }
 
     .tile-text {
-      color: #ddd;
+      color: #f1f5f9;
     }
   }
 }
@@ -3358,26 +3359,32 @@ footer {
   cursor: pointer;
   background: white;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 0.7rem 1rem;
   font-size: 1rem;
   font-weight: 500;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
 
   &:hover {
     border-color: $rb-header-navigator-arrow;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   }
 
   &:focus {
     outline: none;
     border-color: $rb-header-navigator-arrow;
-    box-shadow: 0 0 0 3px rgba($rb-header-navigator-arrow, 0.1);
+    box-shadow: 0 0 0 3px rgba($rb-header-navigator-arrow, 0.15);
   }
 
   @include dark-mode {
-    background: #2d2d2d;
-    border-color: #444;
-    color: #eee;
+    background: rgba(30, 41, 59, 0.95);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #f1f5f9;
+
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
   }
 }
 
@@ -3393,10 +3400,15 @@ footer {
   height: 20px;
   flex-shrink: 0;
   color: #888;
+  transition: color 0.2s ease;
 
   svg {
     width: 100%;
     height: 100%;
+  }
+
+  @include dark-mode {
+    color: #94a3b8;
   }
 }
 
@@ -3408,7 +3420,7 @@ footer {
   margin-top: 4px;
   background: white;
   border: 1px solid #ddd;
-  border-radius: 10px;
+  border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   max-height: 400px;
   overflow-y: auto;
@@ -3416,8 +3428,9 @@ footer {
   animation: fadeIn 0.15s ease;
 
   @include dark-mode {
-    background: #2d2d2d;
-    border-color: #444;
+    background: rgba(30, 41, 59, 0.98);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   }
 }
 
