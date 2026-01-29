@@ -110,6 +110,19 @@
     }
 }
 
+// Reduced Motion Support - respects user preference
+@mixin reduced-motion {
+    @media (prefers-reduced-motion: reduce) {
+        @content;
+    }
+}
+
+// Mixin for touch target minimum size (accessibility)
+@mixin min-touch-target($size: 44px) {
+    min-width: $size;
+    min-height: $size;
+}
+
 @mixin premium-modal($max-width: 500px) {
     position: fixed;
     top: 50%;

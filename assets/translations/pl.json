@@ -94,5 +94,6 @@
   "noResultsInScope": "Brak wyników w wybranym zakresie",
   "noResultsInScopeHint": "Spróbuj zmienić zakres na inny lub na Wszystko",
   "settings": "Ustawienia",
-  "appearance": "Wygląd"
+  "appearance": "Wygląd",
+  "loadingMore": "Ładowanie więcej..."
 }
