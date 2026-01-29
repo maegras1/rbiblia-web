@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useIntl } from "react-intl";
+import useFocusTrap from "./hooks/useFocusTrap";
 
 const NOTES_STORAGE_KEY = "rbiblia_notes";
 const GENERAL_NOTES_KEY = "rbiblia_general_notes";
@@ -66,6 +67,9 @@ const NotesPanel = ({
     const [editText, setEditText] = useState("");
     const [isAddingGeneral, setIsAddingGeneral] = useState(false);
     const [newGeneralNote, setNewGeneralNote] = useState("");
+
+    // Focus trap for keyboard navigation
+    const panelRef = useFocusTrap(isOpen, onClose);
 
     // Load notes on mount
     useEffect(() => {
@@ -174,7 +178,7 @@ const NotesPanel = ({
             <div className={`notes-overlay ${isOpen ? 'active' : ''}`} onClick={onClose} />
 
             {/* Panel */}
-            <div className={`notes-panel ${isOpen ? 'open' : ''}`}>
+            <div ref={panelRef} className={`notes-panel ${isOpen ? 'open' : ''}`}>
                 <div className="notes-header">
                     <h3 className="notes-title">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -423,6 +427,9 @@ const NoteEditor = ({
     const [text, setText] = useState("");
     const verseKey = getVerseKey(book, chapter, verse);
 
+    // Focus trap for keyboard navigation
+    const modalRef = useFocusTrap(isOpen, onClose);
+
     // Load existing note
     useEffect(() => {
         if (isOpen) {
@@ -449,7 +456,7 @@ const NoteEditor = ({
     return (
         <>
             <div className={`note-editor-overlay ${isOpen ? 'active' : ''}`} onClick={onClose} />
-            <div className={`note-editor-modal ${isOpen ? 'open' : ''}`}>
+            <div ref={modalRef} className={`note-editor-modal ${isOpen ? 'open' : ''}`}>
                 <div className="note-editor-header">
                     <h4 className="note-editor-title">
                         {formatMessage({ id: "noteFor" })} {bookName} {chapter}:{verse}

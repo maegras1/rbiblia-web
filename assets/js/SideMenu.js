@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useIntl } from "react-intl";
 import { loadNotes, saveNotes } from "./Notes";
+import useFocusTrap from "./hooks/useFocusTrap";
 
 const SideMenu = ({ isOpen, onClose, children }) => {
     const { formatMessage } = useIntl();
+
+    // Focus trap for keyboard navigation
+    const panelRef = useFocusTrap(isOpen, onClose);
 
     return (
         <>
@@ -14,7 +18,7 @@ const SideMenu = ({ isOpen, onClose, children }) => {
             />
 
             {/* Panel */}
-            <div className={`side-menu-panel ${isOpen ? 'open' : ''}`}>
+            <div ref={panelRef} className={`side-menu-panel ${isOpen ? 'open' : ''}`}>
                 {children}
             </div>
         </>

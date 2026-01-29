@@ -95,5 +95,6 @@
   "noResultsInScope": "No results in selected scope",
   "noResultsInScopeHint": "Try changing scope to All",
   "settings": "Settings",
-  "appearance": "Appearance"
+  "appearance": "Appearance",
+  "loadingMore": "Loading more..."
 }

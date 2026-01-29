@@ -1,6 +1,8 @@
-import React, { useState, useCallback, useRef, useMemo } from "react";
+import React, { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { useIntl } from "react-intl";
 import { OT_BOOKS, NT_BOOKS, SEARCH_SCOPE } from "./constants";
+import useFocusTrap from "./hooks/useFocusTrap";
+import useScrollWithVirtualization from "./hooks/useScrollWithVirtualization";
 
 /**
  * Search Panel - Full-text search across Bible verses
@@ -23,6 +25,9 @@ const SearchPanel = ({
 
     // Debounced search
     const searchTimeoutRef = useRef(null);
+
+    // Focus trap for keyboard navigation
+    const panelRef = useFocusTrap(isOpen, onClose);
 
     // Get book name
     const getBookName = (bookId) => {
@@ -189,6 +194,19 @@ const SearchPanel = ({
         return results;
     }, [results, searchScope]);
 
+    // Virtual scrolling for results list
+    const {
+        visibleItems: visibleResults,
+        hasMore,
+        handleScroll,
+        reset: resetVirtualization,
+    } = useScrollWithVirtualization(filteredResults, { initialCount: 20, batchSize: 15 });
+
+    // Reset virtualization when filtered results change
+    useEffect(() => {
+        resetVirtualization();
+    }, [filteredResults, resetVirtualization]);
+
 
     return (
         <>
@@ -196,7 +214,7 @@ const SearchPanel = ({
             <div className={`search-overlay ${isOpen ? 'active' : ''}`} onClick={onClose} />
 
             {/* Panel */}
-            <div className={`search-panel ${isOpen ? 'open' : ''}`}>
+            <div ref={panelRef} className={`search-panel ${isOpen ? 'open' : ''}`}>
                 <div className="search-header">
                     <h3 className="search-title">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -317,12 +335,19 @@ const SearchPanel = ({
                                     {formatMessage({ id: "resultsCount" }, { count: filteredResults.length })}
                                 </span>
                             </div>
-                            <ul className="search-results">
-                                {filteredResults.map((result, index) => (
+                            <ul className="search-results" onScroll={handleScroll}>
+                                {visibleResults.map((result, index) => (
                                     <li
                                         key={`${result.book}_${result.chapter}_${result.verse}_${index}`}
                                         className="search-result-item"
                                         onClick={() => handleResultClick(result)}
+                                        tabIndex={0}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
+                                                handleResultClick(result);
+                                            }
+                                        }}
                                     >
                                         <div className="search-result-header">
                                             <span className="search-result-reference">
@@ -337,6 +362,12 @@ const SearchPanel = ({
                                         </p>
                                     </li>
                                 ))}
+                                {hasMore && (
+                                    <li className="load-more-indicator">
+                                        <span className="load-more-spinner"></span>
+                                        {formatMessage({ id: "loadingMore" }, { defaultMessage: "Loading more..." })}
+                                    </li>
+                                )}
                             </ul>
                         </>
                     )}
