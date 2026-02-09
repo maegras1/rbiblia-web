@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useIntl } from "react-intl";
 import { getComparisonLimit, getFavoriteTranslations } from "./SideMenu";
+import { safeJsonParse } from "./safeJsonParse";
 
 const ComparisonGrid = ({
     verseId,
@@ -46,7 +47,7 @@ const ComparisonGrid = ({
         setLoading((prev) => ({ ...prev, [translationId]: true }));
 
         fetch(`/api/${locale}/translation/${translationId}/book/${bookId}/chapter/${chapterId}`)
-            .then((res) => res.json())
+            .then((res) => safeJsonParse(res))
             .then((result) => {
                 // Only update if we're still on the same verse
                 if (currentVerseIdRef.current === forVerseId) {

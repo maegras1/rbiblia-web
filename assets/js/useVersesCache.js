@@ -1,4 +1,5 @@
 import { useRef, useCallback } from "react";
+import { safeJsonParse } from "./safeJsonParse";
 
 /**
  * Hook for caching verses - prevents re-fetching already downloaded chapters
@@ -37,7 +38,7 @@ const useVersesCache = (locale) => {
             const response = await fetch(
                 `/api/${locale}/translation/${translation}/book/${book}/chapter/${chapter}`
             );
-            const result = await response.json();
+            const result = await safeJsonParse(response);
 
             // Save to cache
             if (result.data) {
@@ -74,9 +75,9 @@ const useVersesCache = (locale) => {
             fetch(
                 `/api/${locale}/translation/${translation}/book/${book}/chapter/${chapter}`
             )
-                .then(res => res.json())
+                .then(res => safeJsonParse(res))
                 .then(result => {
-                    if (result.data && cacheRef.current.size < MAX_CACHE_SIZE) {
+                    if (result?.data && cacheRef.current.size < MAX_CACHE_SIZE) {
                         cacheRef.current.set(cacheKey, result.data);
                     }
                 })

@@ -3,6 +3,7 @@ import { useIntl } from "react-intl";
 import { OT_BOOKS, NT_BOOKS, SEARCH_SCOPE } from "./constants";
 import useFocusTrap from "./hooks/useFocusTrap";
 import useScrollWithVirtualization from "./hooks/useScrollWithVirtualization";
+import { safeJsonParse } from "./safeJsonParse";
 
 /**
  * Search Panel - Full-text search across Bible verses
@@ -69,12 +70,7 @@ const SearchPanel = ({
                 }
             );
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                // API returns { code, message } on error
-                throw new Error(data.message || data.error || "Search failed");
-            }
+            const data = await safeJsonParse(response);
 
             // API returns { code, data: { translation, query, results } }
             // Handle both nested and flat response structures

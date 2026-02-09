@@ -11,7 +11,7 @@ const SelectionGrid = ({
     currentChapter = null,  // Currently active chapter to highlight
     onClose,
 }) => {
-    const { formatMessage } = useIntl();
+    const { formatMessage, locale } = useIntl();
     const [view, setView] = useState(initialBook ? "chapters" : "books");
     const [selectedBook, setSelectedBook] = useState(initialBook);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -28,7 +28,7 @@ const SelectionGrid = ({
      */
     const getBookDisplayName = (bookId) => {
         if (isMobile) {
-            return getSigla(bookId);
+            return getSigla(bookId, locale);
         }
         return books[bookId]?.name || bookId;
     };
