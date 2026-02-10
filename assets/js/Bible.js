@@ -18,6 +18,8 @@ import { NotesPanel, NoteEditor } from "./Notes";
 import SearchPanel from "./SearchPanel";
 import useVersesCache from "./useVersesCache";
 import useScrollDirection from "./useScrollDirection";
+import { useKeyboardNavigation } from "./hooks";
+import { safeJsonParse } from "./safeJsonParse";
 
 const Bible = ({ intl, setLocale }) => {
     const [error, setError] = useState(null);
@@ -244,7 +246,7 @@ const Bible = ({ intl, setLocale }) => {
 
         Promise.all([
             fetch(`/api/${locale}/translation`)
-                .then((res) => res.json())
+                .then((res) => safeJsonParse(res))
                 .then(
                     (result) => {
                         setTranslations(result.data);
@@ -257,7 +259,7 @@ const Bible = ({ intl, setLocale }) => {
                     setIsTranslationsLoading(false);
                 }),
             fetch(`/api/${locale}/book`)
-                .then((res) => res.json())
+                .then((res) => safeJsonParse(res))
                 .then(
                     (result) => {
                         setBooks(result.data);
@@ -359,7 +361,7 @@ const Bible = ({ intl, setLocale }) => {
                 );
                 if (!response.ok)
                     throw new Error("Network response was not ok.");
-                const result = await response.json();
+                const result = await safeJsonParse(response);
                 setStructure(result.data);
                 setSelectedBook((_selectedBook) =>
                     getAppropriateBook(result.data, _selectedBook)
@@ -375,13 +377,21 @@ const Bible = ({ intl, setLocale }) => {
     }, [selectedTranslation, intl.locale]);
 
     // Swipe navigation - disabled when overlays are open
+    const overlaysOpen = isSelectionOpen || !!comparedVerse || isSideMenuOpen || isNotesOpen || isSearchOpen || !!editingNoteVerse;
     useSwipeNavigation(
         nextChapter,  // Swipe left -> next chapter
         prevChapter,  // Swipe right -> previous chapter
         {
             threshold: 80,
-            enabled: !isSelectionOpen && !comparedVerse && showVerses
+            enabled: !overlaysOpen && showVerses
         }
+    );
+
+    // Keyboard navigation (Arrow Left/Right) - disabled when overlays are open
+    useKeyboardNavigation(
+        prevChapter,    // ArrowLeft  → previous chapter
+        nextChapter,    // ArrowRight → next chapter
+        { enabled: !overlaysOpen && showVerses }
     );
 
     // Render content
@@ -446,7 +456,7 @@ const Bible = ({ intl, setLocale }) => {
                     verseId={comparedVerse}
                     bookId={selectedBook}
                     bookName={books[selectedBook]?.name}
-                    bookSigil={getSigla(selectedBook)}
+                    bookSigil={getSigla(selectedBook, intl.locale)}
                     chapterId={selectedChapter}
                     translations={translations}
                     currentTranslation={selectedTranslation}

@@ -8,3 +8,4 @@ yarn-error.log
 .agent/
 
 docs/ideas.md
+.vscode/launch.json
