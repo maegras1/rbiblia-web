@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useIntl } from "react-intl";
 import { getFavoriteTranslations, saveFavoriteTranslations } from "./SideMenu";
+import Icon from "./Icon";
 
 const TranslationSelector = ({
     translations,
@@ -89,7 +90,11 @@ const TranslationSelector = ({
                     onClick={(e) => toggleFavorite(e, t.id)}
                     title={favorites.includes(t.id) ? formatMessage({ id: "removeFromFavorites" }) : formatMessage({ id: "addToFavorites" })}
                 >
-                    {favorites.includes(t.id) ? '★' : '☆'}
+                    <Icon
+                        name="star"
+                        size={16}
+                        fill={favorites.includes(t.id) ? "currentColor" : "none"}
+                    />
                 </button>
             )}
         </div>
@@ -114,9 +119,7 @@ const TranslationSelector = ({
                     )}
                 </span>
                 <span className="translation-selector-arrow">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
+                    <Icon name="chevron-down" size={20} />
                 </span>
             </button>
 
@@ -125,7 +128,16 @@ const TranslationSelector = ({
                     {/* Favorites group */}
                     {favoriteTranslations.length > 0 && (
                         <div className="translation-group">
-                            <div className="translation-group-label">★ {formatMessage({ id: "favorites" })}</div>
+                            <div className="translation-group-label">
+                                <Icon
+                                    name="star"
+                                    size={14}
+                                    fill="currentColor"
+                                    className="me-2"
+                                    style={{ display: 'inline-block', verticalAlign: 'text-bottom' }}
+                                />
+                                {formatMessage({ id: "favorites" })}
+                            </div>
                             {favoriteTranslations
                                 .sort((a, b) => a.name.localeCompare(b.name))
                                 .map(t => renderTranslationItem(t))}

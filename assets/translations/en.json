@@ -96,5 +96,8 @@
   "noResultsInScopeHint": "Try changing scope to All",
   "settings": "Settings",
   "appearance": "Appearance",
-  "loadingMore": "Loading more..."
+  "loadingMore": "Loading more...",
+  "showMore": "Show more",
+  "showLess": "Show less",
+  "changelogTitle": "Changelog"
 }

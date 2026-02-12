@@ -1,11 +1,10 @@
 import clsx from "clsx";
 import React from "react";
+import Icon from "./Icon";
 
 function DirectionalNavigationButton({ direction, disabled, ...restProps }) {
     const className = clsx(
         "icon-navigator",
-        direction === "left" && "icon-navigator-left",
-        direction === "right" && "icon-navigator-right",
         disabled && "icon-navigator-disabled"
     );
 
@@ -14,7 +13,10 @@ function DirectionalNavigationButton({ direction, disabled, ...restProps }) {
             {...restProps}
             disabled={disabled}
             className={className}
-        ></button>
+        >
+            {direction === "left" && <Icon name="chevron-left" />}
+            {direction === "right" && <Icon name="chevron-right" />}
+        </button>
     );
 }
 

@@ -96,5 +96,8 @@
   "noResultsInScopeHint": "Versuchen Sie, den Bereich auf Alle zu ändern",
   "settings": "Einstellungen",
   "appearance": "Aussehen",
-  "loadingMore": "Weitere laden..."
+  "loadingMore": "Weitere laden...",
+  "showMore": "Mehr",
+  "showLess": "Weniger",
+  "changelogTitle": "Aenderungsprotokoll"
 }

@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { getSigla } from "./bookSigla";
 import Navigator from "./Navigator";
 import Reader from "./Reader";
-import StatusBar from "./StatusBar";
 import { injectIntl } from "react-intl";
 import getDataFromCurrentPathname from "./getDataFromCurrentPathname";
 import { AppError, ErrorToast } from "./AppError";
@@ -16,6 +15,8 @@ import useSwipeNavigation from "./useSwipeNavigation";
 import { SideMenu, SideMenuTab, DisplaySettings } from "./SideMenu";
 import { NotesPanel, NoteEditor } from "./Notes";
 import SearchPanel from "./SearchPanel";
+import ChangelogModal from "./ChangelogModal";
+import WelcomePopup, { isWelcomePopupDisabled } from "./WelcomePopup";
 import useVersesCache from "./useVersesCache";
 import useScrollDirection from "./useScrollDirection";
 import { useKeyboardNavigation } from "./hooks";
@@ -38,6 +39,8 @@ const Bible = ({ intl, setLocale }) => {
     const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
     const [isNotesOpen, setIsNotesOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isChangelogOpen, setIsChangelogOpen] = useState(false);
+    const [isWelcomePopupOpen, setIsWelcomePopupOpen] = useState(false);
 
     // Note editor state
     const [editingNoteVerse, setEditingNoteVerse] = useState(null);
@@ -130,6 +133,12 @@ const Bible = ({ intl, setLocale }) => {
 
         window.addEventListener("popstate", handlePopState);
         return () => window.removeEventListener("popstate", handlePopState);
+    }, []);
+
+    useEffect(() => {
+        if (!isWelcomePopupDisabled()) {
+            setIsWelcomePopupOpen(true);
+        }
     }, []);
 
     const keepChapterIfPossible = useRef(false);
@@ -377,7 +386,15 @@ const Bible = ({ intl, setLocale }) => {
     }, [selectedTranslation, intl.locale]);
 
     // Swipe navigation - disabled when overlays are open
-    const overlaysOpen = isSelectionOpen || !!comparedVerse || isSideMenuOpen || isNotesOpen || isSearchOpen || !!editingNoteVerse;
+    const overlaysOpen =
+        isSelectionOpen ||
+        !!comparedVerse ||
+        isSideMenuOpen ||
+        isNotesOpen ||
+        isSearchOpen ||
+        isChangelogOpen ||
+        isWelcomePopupOpen ||
+        !!editingNoteVerse;
     useSwipeNavigation(
         nextChapter,  // Swipe left -> next chapter
         prevChapter,  // Swipe right -> previous chapter
@@ -494,8 +511,6 @@ const Bible = ({ intl, setLocale }) => {
                 currentChapter={selectedChapter}
                 className={isNavVisible ? "" : "nav-hidden-bottom"}
             />
-            <StatusBar />
-
             {/* Notes Panel */}
             <NotesPanel
                 isOpen={isNotesOpen}
@@ -540,6 +555,7 @@ const Bible = ({ intl, setLocale }) => {
                     theme={theme}
                     setTheme={setTheme}
                     onClose={() => setIsSideMenuOpen(false)}
+                    onOpenChangelog={() => setIsChangelogOpen(true)}
                 />
             </SideMenu>
 
@@ -552,6 +568,14 @@ const Bible = ({ intl, setLocale }) => {
                 chapter={selectedChapter}
                 verse={editingNoteVerse}
                 bookName={books[selectedBook]?.name}
+            />
+            <ChangelogModal
+                isOpen={isChangelogOpen}
+                onClose={() => setIsChangelogOpen(false)}
+            />
+            <WelcomePopup
+                isOpen={isWelcomePopupOpen}
+                onClose={() => setIsWelcomePopupOpen(false)}
             />
 
             {/* Toast for non-blocking errors */}

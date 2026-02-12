@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useIntl } from "react-intl";
 import { loadNotes, saveNotes } from "./Notes";
 import useFocusTrap from "./hooks/useFocusTrap";
+import Icon from "./Icon";
 
 const SideMenu = ({ isOpen, onClose, children }) => {
     const { formatMessage } = useIntl();
@@ -35,10 +36,7 @@ const SideMenuTab = ({ onClick, className = "" }) => {
             onClick={onClick}
             aria-label={formatMessage({ id: "openMenu" })}
         >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-            </svg>
+            <Icon name="settings" />
         </button>
     );
 };
@@ -74,7 +72,8 @@ const DisplaySettings = ({
     setLocaleAndUpdateHistory,
     theme,
     setTheme,
-    onClose
+    onClose,
+    onOpenChangelog
 }) => {
     const { formatMessage, locale } = useIntl();
     const fileInputRef = useRef(null);
@@ -108,61 +107,27 @@ const DisplaySettings = ({
     const tabs = [
         {
             id: 'text',
-            icon: (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="4 7 4 4 20 4 20 7" />
-                    <line x1="9" y1="20" x2="15" y2="20" />
-                    <line x1="12" y1="4" x2="12" y2="20" />
-                </svg>
-            ),
+            icon: <Icon name="type" />,
             label: formatMessage({ id: "textSettings" })
         },
         {
             id: 'appearance',
-            icon: (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="5" />
-                    <line x1="12" y1="1" x2="12" y2="3" />
-                    <line x1="12" y1="21" x2="12" y2="23" />
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                    <line x1="1" y1="12" x2="3" y2="12" />
-                    <line x1="21" y1="12" x2="23" y2="12" />
-                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                </svg>
-            ),
+            icon: <Icon name="sun" />,
             label: formatMessage({ id: "appearance" })
         },
         {
             id: 'language',
-            icon: (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                </svg>
-            ),
+            icon: <Icon name="globe" />,
             label: formatMessage({ id: "language" })
         },
         {
             id: 'favorites',
-            icon: (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                </svg>
-            ),
+            icon: <Icon name="star" />,
             label: formatMessage({ id: "favoriteTranslations" })
         },
         {
             id: 'backup',
-            icon: (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                    <polyline points="17 21 17 13 7 13 7 21" />
-                    <polyline points="7 3 7 8 15 8" />
-                </svg>
-            ),
+            icon: <Icon name="archive" />,
             label: formatMessage({ id: "notesBackup" })
         }
     ];
@@ -289,10 +254,7 @@ const DisplaySettings = ({
                             onClick={onClose}
                             aria-label={formatMessage({ id: "close" })}
                         >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
+                            <Icon name="x" />
                         </button>
                     )}
                 </div>
@@ -465,19 +427,14 @@ const DisplaySettings = ({
                                                     }}
                                                     title={formatMessage({ id: "removeFromFavorites" })}
                                                 >
-                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                        <line x1="18" y1="6" x2="6" y2="18" />
-                                                        <line x1="6" y1="6" x2="18" y2="18" />
-                                                    </svg>
+                                                    <Icon name="x" />
                                                 </button>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
                                     <div className="no-favorites-hint">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                                        </svg>
+                                        <Icon name="star" />
                                         <p>{formatMessage({ id: "noFavorites" })}</p>
                                         <span>{formatMessage({ id: "noFavoritesHint" })}</span>
                                     </div>
@@ -503,11 +460,7 @@ const DisplaySettings = ({
                                         className="backup-btn backup-export"
                                         onClick={handleExportNotes}
                                     >
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                            <polyline points="7 10 12 15 17 10"></polyline>
-                                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                                        </svg>
+                                        <Icon name="upload" />
                                         {formatMessage({ id: "exportNotes" })}
                                     </button>
 
@@ -515,14 +468,9 @@ const DisplaySettings = ({
                                         className="backup-btn backup-import"
                                         onClick={() => fileInputRef.current?.click()}
                                     >
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                            <polyline points="17 8 12 3 7 8"></polyline>
-                                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                                        </svg>
+                                        <Icon name="download" />
                                         {formatMessage({ id: "importNotes" })}
                                     </button>
-
                                     <input
                                         ref={fileInputRef}
                                         type="file"
@@ -531,6 +479,15 @@ const DisplaySettings = ({
                                         style={{ display: 'none' }}
                                     />
                                 </div>
+                                {onOpenChangelog && (
+                                    <button
+                                        className="backup-btn backup-changelog mt-2"
+                                        onClick={onOpenChangelog}
+                                    >
+                                        <Icon name="file-text" />
+                                        {formatMessage({ id: "changelogLink" })}
+                                    </button>
+                                )}
 
                                 {importStatus === 'success' && (
                                     <p className="import-status import-success">

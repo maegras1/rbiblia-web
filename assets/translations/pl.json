@@ -95,5 +95,8 @@
   "noResultsInScopeHint": "Spróbuj zmienić zakres na inny lub na Wszystko",
   "settings": "Ustawienia",
   "appearance": "Wygląd",
-  "loadingMore": "Ładowanie więcej..."
+  "loadingMore": "Ładowanie więcej...",
+  "showMore": "Wiecej",
+  "showLess": "Mniej",
+  "changelogTitle": "Dziennik zmian"
 }
