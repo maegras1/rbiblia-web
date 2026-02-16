@@ -4,6 +4,10 @@ import { loadNotes, saveNotes } from "./Notes";
 import useFocusTrap from "./hooks/useFocusTrap";
 import Icon from "./Icon";
 
+const FAVORITE_TRANSLATIONS_STORAGE_KEY = 'rbiblia_favorite_translations';
+const FAVORITE_TRANSLATIONS_UPDATED_EVENT = 'rbiblia:favorite-translations-updated';
+const COMPARISON_DIFF_STRICT_KEY = 'rbiblia_comparison_diff_strict';
+
 const SideMenu = ({ isOpen, onClose, children }) => {
     const { formatMessage } = useIntl();
 
@@ -52,14 +56,35 @@ const setComparisonLimitValue = (limit) => {
 
 const getFavoriteTranslations = () => {
     try {
-        return JSON.parse(localStorage.getItem('rbiblia_favorite_translations') || '[]');
+        return JSON.parse(localStorage.getItem(FAVORITE_TRANSLATIONS_STORAGE_KEY) || '[]');
     } catch {
         return [];
     }
 };
 
 const saveFavoriteTranslations = (favorites) => {
-    localStorage.setItem('rbiblia_favorite_translations', JSON.stringify(favorites));
+    localStorage.setItem(FAVORITE_TRANSLATIONS_STORAGE_KEY, JSON.stringify(favorites));
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+            new CustomEvent(FAVORITE_TRANSLATIONS_UPDATED_EVENT, { detail: favorites })
+        );
+    }
+};
+
+const isDiffModeStrict = () => {
+    try {
+        return localStorage.getItem(COMPARISON_DIFF_STRICT_KEY) === '1';
+    } catch {
+        return false;
+    }
+};
+
+const setDiffModeStrict = (strict) => {
+    try {
+        localStorage.setItem(COMPARISON_DIFF_STRICT_KEY, strict ? '1' : '0');
+    } catch {
+        // Ignore storage write failures
+    }
 };
 
 // Settings section with tabs
@@ -80,7 +105,23 @@ const DisplaySettings = ({
     const [importStatus, setImportStatus] = useState(null);
     const [comparisonLimit, setComparisonLimit] = useState(getComparisonLimit);
     const [favoriteTranslations, setFavoriteTranslationsState] = useState(getFavoriteTranslations);
+    const [diffStrict, setDiffStrict] = useState(isDiffModeStrict);
     const [activeTab, setActiveTab] = useState('text');
+
+    useEffect(() => {
+        const handleFavoritesUpdated = (event) => {
+            if (Array.isArray(event.detail)) {
+                setFavoriteTranslationsState(event.detail);
+                return;
+            }
+            setFavoriteTranslationsState(getFavoriteTranslations());
+        };
+
+        window.addEventListener(FAVORITE_TRANSLATIONS_UPDATED_EVENT, handleFavoritesUpdated);
+        return () => {
+            window.removeEventListener(FAVORITE_TRANSLATIONS_UPDATED_EVENT, handleFavoritesUpdated);
+        };
+    }, []);
 
     const fontSizes = [
         { value: 'small', label: 'A', size: '0.9rem' },
@@ -391,6 +432,27 @@ const DisplaySettings = ({
                                         ))}
                                     </div>
                                 </div>
+
+                                <div className="setting-group">
+                                    <label className="setting-label">{formatMessage({ id: "diffMode" })}</label>
+                                    <p className="setting-hint mb-2">
+                                        {formatMessage({ id: "diffModeHint" })}
+                                    </p>
+                                    <div className="diff-mode-toggle">
+                                        <button
+                                            className={`diff-mode-btn ${!diffStrict ? 'active' : ''}`}
+                                            onClick={() => { setDiffStrict(false); setDiffModeStrict(false); }}
+                                        >
+                                            {formatMessage({ id: "diffModeLoose" })}
+                                        </button>
+                                        <button
+                                            className={`diff-mode-btn ${diffStrict ? 'active' : ''}`}
+                                            onClick={() => { setDiffStrict(true); setDiffModeStrict(true); }}
+                                        >
+                                            {formatMessage({ id: "diffModeStrict" })}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Favorite translations list */}
@@ -415,12 +477,12 @@ const DisplaySettings = ({
                                             <div
                                                 key={t.id}
                                                 className="favorite-translation-item is-favorite"
-                                                onClick={() => toggleFavorite(t.id)}
                                             >
                                                 <span className="favorite-star">★</span>
                                                 <span className="favorite-name">{t.name}</span>
                                                 <button
                                                     className="favorite-remove"
+                                                    type="button"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         toggleFavorite(t.id);
@@ -508,4 +570,13 @@ const DisplaySettings = ({
     );
 };
 
-export { SideMenu, SideMenuTab, DisplaySettings, getComparisonLimit, getFavoriteTranslations, saveFavoriteTranslations };
+export {
+    SideMenu,
+    SideMenuTab,
+    DisplaySettings,
+    getComparisonLimit,
+    getFavoriteTranslations,
+    saveFavoriteTranslations,
+    isDiffModeStrict,
+    FAVORITE_TRANSLATIONS_UPDATED_EVENT,
+};

@@ -158,11 +158,11 @@ const Verse = memo(function Verse({
         <div className={`row line ${isPressing ? 'pressing' : ''} ${hasNote ? 'has-note' : ''}`}>
             <div className="col-2 col-lg-1 verse-number-cell">
                 <span
-                    className={`add-note-hint desktop-only ${hasNote ? "has-note-value" : ""}`}
+                    className={`add-note-hint ${hasNote ? 'has-note-value' : 'desktop-only'}`}
                     title={formatMessage({ id: hasNote ? "edit" : "addNote" })}
                     onClick={openNoteEditor}
                 >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg viewBox="0 0 24 24" fill={hasNote ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                     </svg>
@@ -174,19 +174,6 @@ const Verse = memo(function Verse({
                 >
                     {appVerse}
                 </a>
-                {hasNote && (
-                    <button
-                        type="button"
-                        className="note-indicator"
-                        title={formatMessage({ id: "edit" })}
-                        onClick={openNoteEditor}
-                    >
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                    </button>
-                )}
             </div>
             <div
                 className="col-10 col-lg-11 verse"

@@ -15,6 +15,7 @@ import useSwipeNavigation from "./useSwipeNavigation";
 import { SideMenu, SideMenuTab, DisplaySettings } from "./SideMenu";
 import { NotesPanel, NoteEditor } from "./Notes";
 import SearchPanel from "./SearchPanel";
+import ChapterComparison from "./ChapterComparison";
 import ChangelogModal from "./ChangelogModal";
 import WelcomePopup, { isWelcomePopupDisabled } from "./WelcomePopup";
 import useVersesCache from "./useVersesCache";
@@ -41,6 +42,7 @@ const Bible = ({ intl, setLocale }) => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isChangelogOpen, setIsChangelogOpen] = useState(false);
     const [isWelcomePopupOpen, setIsWelcomePopupOpen] = useState(false);
+    const [isChapterCompOpen, setIsChapterCompOpen] = useState(false);
 
     // Note editor state
     const [editingNoteVerse, setEditingNoteVerse] = useState(null);
@@ -69,7 +71,14 @@ const Bible = ({ intl, setLocale }) => {
             large: '1.4rem',
             xlarge: '1.7rem'
         };
+        const numberSizeMap = {
+            small: '0.75rem',
+            medium: '0.85rem',
+            large: '1.05rem',
+            xlarge: '1.25rem'
+        };
         document.documentElement.style.setProperty('--verse-font-size', sizeMap[fontSize]);
+        document.documentElement.style.setProperty('--verse-number-font-size', numberSizeMap[fontSize]);
     }, [fontSize]);
 
 
@@ -101,6 +110,7 @@ const Bible = ({ intl, setLocale }) => {
             mono: '"Fira Code", "Cascadia Code", Consolas, monospace'
         };
         document.documentElement.style.setProperty('--verse-font-family', familyMap[fontFamily]);
+        document.documentElement.style.setProperty('--verse-number-font-family', familyMap[fontFamily]);
     }, [fontFamily]);
 
     // Note: It contains all books available - not only translation specific
@@ -453,6 +463,7 @@ const Bible = ({ intl, setLocale }) => {
                 onOpenNotes={() => setIsNotesOpen(true)}
                 onOpenSearch={() => setIsSearchOpen(true)}
                 onOpenSettings={() => setIsSideMenuOpen(true)}
+                onOpenChapterComparison={() => setIsChapterCompOpen(true)}
                 className={isNavVisible ? "" : "nav-hidden-header"}
             />
             {isSelectionOpen && (
@@ -531,6 +542,23 @@ const Bible = ({ intl, setLocale }) => {
                 selectedTranslation={selectedTranslation}
                 books={books}
                 onNavigateToVerse={(book, chapter, verse) => {
+                    changeSelectedBook(book);
+                    changeSelectedChapter(chapter);
+                }}
+            />
+
+            {/* Chapter Comparison */}
+            <ChapterComparison
+                isOpen={isChapterCompOpen}
+                onClose={() => setIsChapterCompOpen(false)}
+                bookId={selectedBook}
+                bookName={books[selectedBook]?.name}
+                chapterId={selectedChapter}
+                translations={translations}
+                currentTranslation={selectedTranslation}
+                structure={structure}
+                books={books}
+                onNavigateChapter={(book, chapter) => {
                     changeSelectedBook(book);
                     changeSelectedChapter(chapter);
                 }}

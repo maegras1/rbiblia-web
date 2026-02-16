@@ -1,6 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useIntl } from "react-intl";
-import { getFavoriteTranslations, saveFavoriteTranslations } from "./SideMenu";
+import {
+    FAVORITE_TRANSLATIONS_UPDATED_EVENT,
+    getFavoriteTranslations,
+    saveFavoriteTranslations,
+} from "./SideMenu";
 import Icon from "./Icon";
 
 const TranslationSelector = ({
@@ -36,6 +40,21 @@ const TranslationSelector = ({
             setFavorites(getFavoriteTranslations());
         }
     }, [isOpen]);
+
+    useEffect(() => {
+        const handleFavoritesUpdated = (event) => {
+            if (Array.isArray(event.detail)) {
+                setFavorites(event.detail);
+                return;
+            }
+            setFavorites(getFavoriteTranslations());
+        };
+
+        window.addEventListener(FAVORITE_TRANSLATIONS_UPDATED_EVENT, handleFavoritesUpdated);
+        return () => {
+            window.removeEventListener(FAVORITE_TRANSLATIONS_UPDATED_EVENT, handleFavoritesUpdated);
+        };
+    }, []);
 
     const handleSelect = (id) => {
         changeSelectedTranslation(id);

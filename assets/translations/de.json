@@ -99,5 +99,22 @@
   "loadingMore": "Weitere laden...",
   "showMore": "Mehr",
   "showLess": "Weniger",
-  "changelogTitle": "Aenderungsprotokoll"
+  "changelogTitle": "Aenderungsprotokoll",
+  "recentSearches": "Letzte Suchen",
+  "clear": "Löschen",
+  "showDifferences": "Unterschiede",
+  "hideDifferences": "Unterschiede ausblenden",
+  "toggleDifferences": "Unterschiede",
+  "toggleDifferencesKeyboardHint": "Drücken Sie D um die Unterschiede hervorzuheben",
+  "diffMode": "Vergleichsmodus",
+  "diffModeHint": "Locker — ignoriert Wortreihenfolge. Strikt (LCS) — paarweiser Vergleich mit dem Original, berücksichtigt Reihenfolge.",
+  "diffModeLoose": "Locker",
+  "diffModeStrict": "Strikt",
+  "suggestionHistory": "Verlauf",
+  "suggestionBook": "Buch",
+  "suggestionPhrase": "Beliebt",
+  "chapterComparison": "Kapitelvergleich",
+  "chapterCompSelectTranslation": "Übersetzung wählen...",
+  "chapterCompSelectHint": "Wählen Sie Übersetzungen zum Vergleichen aus den Dropdown-Listen oben.",
+  "chapterCompError": "Kapitel konnte nicht geladen werden."
 }

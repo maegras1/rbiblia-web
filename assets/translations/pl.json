@@ -98,5 +98,22 @@
   "loadingMore": "Ładowanie więcej...",
   "showMore": "Wiecej",
   "showLess": "Mniej",
-  "changelogTitle": "Dziennik zmian"
+  "changelogTitle": "Dziennik zmian",
+  "recentSearches": "Ostatnie wyszukiwania",
+  "clear": "Wyczyść",
+  "showDifferences": "Różnice",
+  "hideDifferences": "Ukryj różnice",
+  "toggleDifferences": "różnice",
+  "toggleDifferencesKeyboardHint": "Naciśnij D aby przełączyć podświetlanie różnic",
+  "diffMode": "Tryb porównywania",
+  "diffModeHint": "Luźny — ignoruje kolejność słów. Ścisły (LCS) — porównuje parami z bazowym, uwzględnia kolejność.",
+  "diffModeLoose": "Luźny",
+  "diffModeStrict": "Ścisły",
+  "suggestionHistory": "historia",
+  "suggestionBook": "księga",
+  "suggestionPhrase": "popularne",
+  "chapterComparison": "Porównanie rozdziałów",
+  "chapterCompSelectTranslation": "Wybierz tłumaczenie...",
+  "chapterCompSelectHint": "Wybierz tłumaczenia do porównania z list rozwijanych powyżej.",
+  "chapterCompError": "Nie udało się załadować rozdziału."
 }

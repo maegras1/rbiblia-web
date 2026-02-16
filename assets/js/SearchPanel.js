@@ -5,6 +5,90 @@ import useFocusTrap from "./hooks/useFocusTrap";
 import useScrollWithVirtualization from "./hooks/useScrollWithVirtualization";
 import { safeJsonParse } from "./safeJsonParse";
 
+const SEARCH_HISTORY_KEY = "rbiblia-search-history";
+const SEARCH_HISTORY_LIMIT = 5;
+const MAX_SUGGESTIONS = 8;
+
+/**
+ * Popular biblical search phrases by locale.
+ * Ordered roughly by frequency / usefulness.
+ */
+const POPULAR_PHRASES = {
+    pl: [
+        "miłość", "wiara", "nadzieja", "zbawienie", "modlitwa",
+        "grzech", "łaska", "pokój", "mądrość", "sprawiedliwość",
+        "miłosierdzie", "przebaczenie", "zmartwychwstanie", "światłość",
+        "prawda", "wolność", "błogosławieństwo", "pocieszenie", "wierność",
+        "Jezus", "Bóg", "Duch Święty", "królestwo", "życie wieczne",
+        "krzyż", "chrzest", "przymierze", "prorok", "anioł", "stworzenie",
+    ],
+    en: [
+        "love", "faith", "hope", "salvation", "prayer",
+        "sin", "grace", "peace", "wisdom", "righteousness",
+        "mercy", "forgiveness", "resurrection", "light",
+        "truth", "freedom", "blessing", "comfort", "faithfulness",
+        "Jesus", "God", "Holy Spirit", "kingdom", "eternal life",
+        "cross", "baptism", "covenant", "prophet", "angel", "creation",
+    ],
+    de: [
+        "Liebe", "Glaube", "Hoffnung", "Erlösung", "Gebet",
+        "Sünde", "Gnade", "Frieden", "Weisheit", "Gerechtigkeit",
+        "Barmherzigkeit", "Vergebung", "Auferstehung", "Licht",
+        "Wahrheit", "Freiheit", "Segen", "Trost", "Treue",
+        "Jesus", "Gott", "Heiliger Geist", "Königreich", "ewiges Leben",
+        "Kreuz", "Taufe", "Bund", "Prophet", "Engel", "Schöpfung",
+    ],
+};
+
+/** Inline SVG icon for suggestion type indicators */
+const SuggestionIcon = ({ type }) => {
+    if (type === "history") {
+        return (
+            <svg className="suggestion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+            </svg>
+        );
+    }
+    if (type === "book") {
+        return (
+            <svg className="suggestion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+            </svg>
+        );
+    }
+    // phrase
+    return (
+        <svg className="suggestion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+    );
+};
+
+const normalizeQuery = (value) => value.trim().replace(/\s+/g, " ");
+
+const getSavedSearchHistory = () => {
+    try {
+        const rawHistory = localStorage.getItem(SEARCH_HISTORY_KEY);
+        if (!rawHistory) {
+            return [];
+        }
+
+        const parsedHistory = JSON.parse(rawHistory);
+        if (!Array.isArray(parsedHistory)) {
+            return [];
+        }
+
+        return parsedHistory
+            .filter(item => typeof item === "string")
+            .map(item => normalizeQuery(item))
+            .filter(item => item.length >= 3)
+            .slice(0, SEARCH_HISTORY_LIMIT);
+    } catch {
+        return [];
+    }
+};
+
 /**
  * Search Panel - Full-text search across Bible verses
  */
@@ -22,7 +106,11 @@ const SearchPanel = ({
     const [hasSearched, setHasSearched] = useState(false);
     const [error, setError] = useState(null);
     const [searchScope, setSearchScope] = useState(SEARCH_SCOPE.ALL);
+    const [searchHistory, setSearchHistory] = useState(getSavedSearchHistory);
+    const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
+    const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
     const abortControllerRef = useRef(null);
+    const suggestionsRef = useRef(null);
 
     // Debounced search
     const searchTimeoutRef = useRef(null);
@@ -35,9 +123,40 @@ const SearchPanel = ({
         return books[bookId]?.name || bookId;
     };
 
+    const saveSearchToHistory = useCallback((searchQuery) => {
+        const normalizedQuery = normalizeQuery(searchQuery);
+        if (normalizedQuery.length < 3) {
+            return;
+        }
+
+        setSearchHistory((previousHistory) => {
+            const nextHistory = [
+                normalizedQuery,
+                ...previousHistory.filter(item => item !== normalizedQuery),
+            ].slice(0, SEARCH_HISTORY_LIMIT);
+
+            try {
+                localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(nextHistory));
+            } catch {
+                // Ignore storage write failures (private mode/quota)
+            }
+            return nextHistory;
+        });
+    }, []);
+
+    const clearSearchHistory = useCallback(() => {
+        try {
+            localStorage.removeItem(SEARCH_HISTORY_KEY);
+        } catch {
+            // Ignore storage write failures (private mode/quota)
+        }
+        setSearchHistory([]);
+    }, []);
+
     // Perform search via API
     const performSearch = useCallback(async (searchQuery) => {
-        if (!searchQuery.trim() || searchQuery.length < 3) {
+        const normalizedQuery = normalizeQuery(searchQuery);
+        if (!normalizedQuery || normalizedQuery.length < 3) {
             setResults([]);
             setHasSearched(false);
             return;
@@ -63,7 +182,7 @@ const SearchPanel = ({
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        query: searchQuery,
+                        query: normalizedQuery,
                         translation: selectedTranslation,
                     }),
                     signal: abortControllerRef.current.signal,
@@ -100,10 +219,80 @@ const SearchPanel = ({
         }
     }, [selectedTranslation, locale, formatMessage]);
 
+    // ─── Autocomplete suggestions ───────────────────────────────
+    const suggestions = useMemo(() => {
+        const normalizedQuery = query.trim().toLowerCase();
+        if (normalizedQuery.length < 1) return [];
+
+        const results = [];
+        const seen = new Set();
+
+        const addIfMatches = (text, type, extra) => {
+            if (results.length >= MAX_SUGGESTIONS) return;
+            const lower = text.toLowerCase();
+            if (lower === normalizedQuery) return; // exact match — no need to suggest
+            if (!lower.includes(normalizedQuery)) return;
+            if (seen.has(lower)) return;
+            seen.add(lower);
+            results.push({ type, text, ...extra });
+        };
+
+        // 1. History (highest priority)
+        searchHistory.forEach(item => addIfMatches(item, "history"));
+
+        // 2. Book names (include bookId for direct navigation)
+        if (books) {
+            Object.entries(books).forEach(([bookId, book]) => {
+                if (book?.name) addIfMatches(book.name, "book", { bookId });
+            });
+        }
+
+        // 3. Popular phrases
+        const phrases = POPULAR_PHRASES[locale] || POPULAR_PHRASES.en;
+        phrases.forEach(phrase => addIfMatches(phrase, "phrase"));
+
+        return results;
+    }, [query, searchHistory, books, locale]);
+
+    // Reset suggestion index when suggestions change
+    useEffect(() => {
+        setSelectedSuggestionIndex(-1);
+    }, [suggestions]);
+
+    // Scroll active suggestion into view
+    useEffect(() => {
+        if (selectedSuggestionIndex >= 0 && suggestionsRef.current) {
+            const active = suggestionsRef.current.children[selectedSuggestionIndex];
+            active?.scrollIntoView?.({ block: "nearest" });
+        }
+    }, [selectedSuggestionIndex]);
+
+    const selectSuggestion = useCallback((suggestion) => {
+        setIsSuggestionsOpen(false);
+        setSelectedSuggestionIndex(-1);
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+
+        // Book suggestion → navigate directly to the book
+        if (suggestion.type === "book" && suggestion.bookId) {
+            onNavigateToVerse?.(suggestion.bookId, 1, 1);
+            onClose();
+            return;
+        }
+
+        // History / phrase → perform text search
+        setQuery(suggestion.text);
+        saveSearchToHistory(suggestion.text);
+        performSearch(suggestion.text);
+    }, [onClose, onNavigateToVerse, performSearch, saveSearchToHistory]);
+
     // Handle input change with debounce
     const handleInputChange = (e) => {
         const value = e.target.value;
         setQuery(value);
+        setIsSuggestionsOpen(true);
+        setSelectedSuggestionIndex(-1);
 
         if (searchTimeoutRef.current) {
             clearTimeout(searchTimeoutRef.current);
@@ -114,17 +303,54 @@ const SearchPanel = ({
         }, 500);  // 500ms debounce
     };
 
+    // Keyboard navigation for suggestions
+    const handleInputKeyDown = (e) => {
+        if (!isSuggestionsOpen || suggestions.length === 0) return;
+
+        if (e.key === "ArrowDown") {
+            e.preventDefault();
+            setSelectedSuggestionIndex(prev =>
+                prev < suggestions.length - 1 ? prev + 1 : 0
+            );
+        } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            setSelectedSuggestionIndex(prev =>
+                prev > 0 ? prev - 1 : suggestions.length - 1
+            );
+        } else if (e.key === "Enter" && selectedSuggestionIndex >= 0) {
+            e.preventDefault();
+            selectSuggestion(suggestions[selectedSuggestionIndex]);
+        } else if (e.key === "Escape") {
+            setIsSuggestionsOpen(false);
+            setSelectedSuggestionIndex(-1);
+        }
+    };
+
+    const handleInputFocus = () => {
+        if (query.trim().length >= 1) {
+            setIsSuggestionsOpen(true);
+        }
+    };
+
+    const handleInputBlur = () => {
+        // Small delay so clicks on suggestions can register before closing
+        setTimeout(() => setIsSuggestionsOpen(false), 180);
+    };
+
     // Handle form submit
     const handleSubmit = (e) => {
         e.preventDefault();
+        setIsSuggestionsOpen(false);
         if (searchTimeoutRef.current) {
             clearTimeout(searchTimeoutRef.current);
         }
+        saveSearchToHistory(query);
         performSearch(query);
     };
 
     // Navigate to result
     const handleResultClick = (result) => {
+        saveSearchToHistory(query);
         onNavigateToVerse?.(result.book, result.chapter, result.verse);
         onClose();
     };
@@ -135,6 +361,14 @@ const SearchPanel = ({
         setResults([]);
         setHasSearched(false);
         setError(null);
+        setIsSuggestionsOpen(false);
+    };
+
+    const handleHistoryItemClick = (historyQuery) => {
+        setQuery(historyQuery);
+        setIsSuggestionsOpen(false);
+        saveSearchToHistory(historyQuery);
+        performSearch(historyQuery);
     };
 
     // Highlight matching text
@@ -239,8 +473,19 @@ const SearchPanel = ({
                             className="search-input"
                             value={query}
                             onChange={handleInputChange}
+                            onKeyDown={handleInputKeyDown}
+                            onFocus={handleInputFocus}
+                            onBlur={handleInputBlur}
                             placeholder={formatMessage({ id: "searchPlaceholder" })}
                             autoFocus
+                            role="combobox"
+                            aria-expanded={isSuggestionsOpen && suggestions.length > 0}
+                            aria-autocomplete="list"
+                            aria-activedescendant={
+                                selectedSuggestionIndex >= 0
+                                    ? `suggestion-${selectedSuggestionIndex}`
+                                    : undefined
+                            }
                         />
                         {query && (
                             <button
@@ -254,8 +499,43 @@ const SearchPanel = ({
                                 </svg>
                             </button>
                         )}
+
+                        {/* Autocomplete suggestions dropdown */}
+                        {isSuggestionsOpen && suggestions.length > 0 && (
+                            <ul
+                                ref={suggestionsRef}
+                                className="search-suggestions"
+                                role="listbox"
+                            >
+                                {suggestions.map((suggestion, index) => (
+                                    <li
+                                        key={`${suggestion.type}-${suggestion.text}`}
+                                        id={`suggestion-${index}`}
+                                        className={`search-suggestion-item ${index === selectedSuggestionIndex ? "active" : ""
+                                            }`}
+                                        role="option"
+                                        aria-selected={index === selectedSuggestionIndex}
+                                        onMouseDown={(e) => {
+                                            e.preventDefault(); // Prevent input blur
+                                            selectSuggestion(suggestion);
+                                        }}
+                                        onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                                    >
+                                        <SuggestionIcon type={suggestion.type} />
+                                        <span className="suggestion-text">{suggestion.text}</span>
+                                        <span className="suggestion-type-label">
+                                            {suggestion.type === "history"
+                                                ? formatMessage({ id: "suggestionHistory" })
+                                                : suggestion.type === "book"
+                                                    ? formatMessage({ id: "suggestionBook" })
+                                                    : formatMessage({ id: "suggestionPhrase" })}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
-                    {query.length > 0 && query.length < 3 && (
+                    {query.length > 0 && query.length < 3 && !isSuggestionsOpen && (
                         <p className="search-hint">{formatMessage({ id: "searchMinChars" })}</p>
                     )}
                 </form>
@@ -370,6 +650,34 @@ const SearchPanel = ({
 
                     {!isSearching && !hasSearched && !error && (
                         <div className="search-initial">
+                            {searchHistory.length > 0 && (
+                                <div className="search-history">
+                                    <div className="search-history-header">
+                                        <h4 className="search-history-title">
+                                            {formatMessage({ id: "recentSearches" })}
+                                        </h4>
+                                        <button
+                                            type="button"
+                                            className="search-history-clear"
+                                            onClick={clearSearchHistory}
+                                        >
+                                            {formatMessage({ id: "clear" }, { defaultMessage: "Clear" })}
+                                        </button>
+                                    </div>
+                                    <div className="search-history-list">
+                                        {searchHistory.map((item) => (
+                                            <button
+                                                key={item}
+                                                type="button"
+                                                className="search-history-chip"
+                                                onClick={() => handleHistoryItemClick(item)}
+                                            >
+                                                {item}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                                 <circle cx="11" cy="11" r="8"></circle>
                                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>

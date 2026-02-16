@@ -1,7 +1,98 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+﻿import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useIntl } from "react-intl";
-import { getComparisonLimit, getFavoriteTranslations } from "./SideMenu";
+import { getComparisonLimit, getFavoriteTranslations, isDiffModeStrict } from "./SideMenu";
 import { safeJsonParse } from "./safeJsonParse";
+
+const COMPARISON_DIFF_MODE_KEY = "rbiblia-comparison-diff-mode";
+const WORD_SPLIT_PATTERN = /([A-Za-z0-9\u00C0-\u024F\u1E00-\u1EFF]+(?:'[A-Za-z0-9\u00C0-\u024F\u1E00-\u1EFF]+)*)/g;
+const WORD_PATTERN = /^[A-Za-z0-9\u00C0-\u024F\u1E00-\u1EFF]+(?:'[A-Za-z0-9\u00C0-\u024F\u1E00-\u1EFF]+)*$/;
+
+const normalizeComparisonWord = (word, locale) => word.toLocaleLowerCase(locale);
+
+const normalizeText = (text) => text.replaceAll("//", " ").replaceAll("\u2019", "'");
+
+const getWordSet = (text, locale) => {
+    const words = normalizeText(text)
+        .split(WORD_SPLIT_PATTERN)
+        .filter(part => WORD_PATTERN.test(part))
+        .map(word => normalizeComparisonWord(word, locale));
+
+    return new Set(words);
+};
+
+/**
+ * Tokenize text into an array of parts (words and separators).
+ * Words match WORD_PATTERN, everything else is a separator.
+ */
+const tokenize = (text) =>
+    normalizeText(text).split(WORD_SPLIT_PATTERN).filter(part => part !== "");
+
+/**
+ * Compute LCS-based word diff between a base text and a compare text.
+ * Returns a Set of token indices in the compare text that are NOT in the LCS
+ * (i.e., they are unique/different compared to the base).
+ */
+const computeLcsDiffIndices = (baseText, compareText, locale) => {
+    const baseTokens = tokenize(baseText);
+    const compareTokens = tokenize(compareText);
+
+    // Extract word tokens with their original indices in the token array
+    const baseWords = [];
+    const compareWords = [];
+
+    baseTokens.forEach((token, idx) => {
+        if (WORD_PATTERN.test(token)) {
+            baseWords.push({ word: normalizeComparisonWord(token, locale), idx });
+        }
+    });
+
+    compareTokens.forEach((token, idx) => {
+        if (WORD_PATTERN.test(token)) {
+            compareWords.push({ word: normalizeComparisonWord(token, locale), idx });
+        }
+    });
+
+    const m = baseWords.length;
+    const n = compareWords.length;
+
+    // Build LCS DP table
+    const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+    for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+            if (baseWords[i - 1].word === compareWords[j - 1].word) {
+                dp[i][j] = dp[i - 1][j - 1] + 1;
+            } else {
+                dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+    }
+
+    // Backtrack to identify which compare-word indices are in LCS
+    const lcsCompareIndices = new Set();
+    let i = m;
+    let j = n;
+    while (i > 0 && j > 0) {
+        if (baseWords[i - 1].word === compareWords[j - 1].word) {
+            lcsCompareIndices.add(compareWords[j - 1].idx);
+            i--;
+            j--;
+        } else if (dp[i - 1][j] > dp[i][j - 1]) {
+            i--;
+        } else {
+            j--;
+        }
+    }
+
+    // Diff indices = all word token indices NOT in LCS
+    const diffIndices = new Set();
+    compareWords.forEach(({ idx: tokenIdx }) => {
+        if (!lcsCompareIndices.has(tokenIdx)) {
+            diffIndices.add(tokenIdx);
+        }
+    });
+
+    return diffIndices;
+};
 
 const ComparisonGrid = ({
     verseId,
@@ -35,6 +126,21 @@ const ComparisonGrid = ({
             ...Array(Math.max(0, comparisonLimit - favorites.length)).fill("")
         ].slice(0, comparisonLimit);
     });
+
+    const [isDiffHighlightEnabled, setIsDiffHighlightEnabled] = useState(() => {
+        try {
+            return localStorage.getItem(COMPARISON_DIFF_MODE_KEY) === "1";
+        } catch {
+            return false;
+        }
+    });
+
+    const [diffStrictMode, setDiffStrictMode] = useState(isDiffModeStrict);
+
+    // Re-read strict mode when the overlay opens or verse changes
+    useEffect(() => {
+        setDiffStrictMode(isDiffModeStrict());
+    }, [verseId]);
 
     const [comparedVerses, setComparedVerses] = useState({});
     const [loading, setLoading] = useState({});
@@ -125,12 +231,167 @@ const ComparisonGrid = ({
     const canGoPrev = currentVerseNum > 1;
     const canGoNext = currentVerseNum < totalVersesNum;
 
+    const toggleDiffHighlight = useCallback(() => {
+        setIsDiffHighlightEnabled((previousValue) => !previousValue);
+    }, []);
+
+    useEffect(() => {
+        try {
+            localStorage.setItem(COMPARISON_DIFF_MODE_KEY, isDiffHighlightEnabled ? "1" : "0");
+        } catch {
+            // Ignore storage write failures (private mode/quota)
+        }
+    }, [isDiffHighlightEnabled]);
+
+    const primaryText = comparedVerses[currentTranslation];
+
+    const availableComparisonTexts = useMemo(() => {
+        const selectedTexts = selectedTranslations
+            .map(id => comparedVerses[id])
+            .filter(Boolean);
+
+        return primaryText ? [primaryText, ...selectedTexts] : selectedTexts;
+    }, [comparedVerses, primaryText, selectedTranslations]);
+
+    const canHighlightDifferences = availableComparisonTexts.length >= 2;
+
+    // --- LOOSE MODE: global bag-of-words intersection ---
+    const commonWords = useMemo(() => {
+        if (!canHighlightDifferences || diffStrictMode) {
+            return new Set();
+        }
+
+        const wordSets = availableComparisonTexts
+            .map(text => getWordSet(text, locale))
+            .filter(wordSet => wordSet.size > 0);
+
+        if (wordSets.length < 2) {
+            return new Set();
+        }
+
+        const [firstSet, ...otherSets] = wordSets;
+        return new Set(
+            [...firstSet].filter((word) => otherSets.every(set => set.has(word)))
+        );
+    }, [availableComparisonTexts, canHighlightDifferences, diffStrictMode, locale]);
+
+    // --- STRICT MODE: pairwise LCS diff indices per translation ---
+    const strictDiffMap = useMemo(() => {
+        if (!canHighlightDifferences || !diffStrictMode || !primaryText) {
+            return new Map();
+        }
+
+        const map = new Map();
+
+        // Diff for the primary text itself against the first selected translation
+        // (primary gets its own diff — words not in LCS vs first selected)
+        const firstSelectedText = selectedTranslations
+            .map(id => comparedVerses[id])
+            .find(Boolean);
+
+        if (firstSelectedText) {
+            map.set(currentTranslation, computeLcsDiffIndices(firstSelectedText, primaryText, locale));
+        }
+
+        // Diff for each selected translation against the primary
+        selectedTranslations.forEach(id => {
+            const text = comparedVerses[id];
+            if (id && text) {
+                map.set(id, computeLcsDiffIndices(primaryText, text, locale));
+            }
+        });
+
+        return map;
+    }, [canHighlightDifferences, comparedVerses, currentTranslation, diffStrictMode, locale, primaryText, selectedTranslations]);
+
+    const renderComparisonText = useCallback((text, translationId) => {
+        const displayText = text.replaceAll("//", "\n").replaceAll("\u2019", "'");
+        if (!isDiffHighlightEnabled || !canHighlightDifferences) {
+            return displayText;
+        }
+
+        const tokens = displayText.split(WORD_SPLIT_PATTERN).filter(part => part !== "");
+
+        if (diffStrictMode) {
+            // STRICT: use pairwise LCS diff indices
+            const diffIndices = strictDiffMap.get(translationId);
+            if (!diffIndices) {
+                return displayText;
+            }
+
+            return tokens.map((part, index) => {
+                if (!WORD_PATTERN.test(part)) {
+                    return part;
+                }
+
+                if (!diffIndices.has(index)) {
+                    return part;
+                }
+
+                return (
+                    <mark
+                        key={`${translationId}_${index}`}
+                        className="comparison-diff-word"
+                    >
+                        {part}
+                    </mark>
+                );
+            });
+        }
+
+        // LOOSE: global bag-of-words
+        return tokens.map((part, index) => {
+            if (!WORD_PATTERN.test(part)) {
+                return part;
+            }
+
+            const normalizedWord = normalizeComparisonWord(part, locale);
+            if (commonWords.has(normalizedWord)) {
+                return part;
+            }
+
+            return (
+                <mark
+                    key={`${translationId}_${index}`}
+                    className="comparison-diff-word"
+                >
+                    {part}
+                </mark>
+            );
+        });
+    }, [canHighlightDifferences, commonWords, diffStrictMode, isDiffHighlightEnabled, locale, strictDiffMap]);
+
+    const isEditableFieldFocused = useCallback(() => {
+        const activeTag = document.activeElement?.tagName?.toLowerCase();
+        return (
+            activeTag === "input" ||
+            activeTag === "textarea" ||
+            activeTag === "select" ||
+            document.activeElement?.isContentEditable
+        );
+    }, []);
+
     // Keyboard navigation
     useEffect(() => {
         const handleKeyDown = (e) => {
-            if (e.key === 'Escape') {
+            if (e.key === "Escape") {
                 onClose();
-            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                return;
+            }
+
+            if (isEditableFieldFocused()) {
+                return;
+            }
+
+            if (e.key.toLowerCase() === "d") {
+                if (!e.repeat) {
+                    e.preventDefault();
+                    toggleDiffHighlight();
+                }
+                return;
+            }
+
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
                 e.preventDefault();
                 handlePrevVerse();
             } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
@@ -141,7 +402,7 @@ const ComparisonGrid = ({
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [handlePrevVerse, handleNextVerse, onClose]);
+    }, [handlePrevVerse, handleNextVerse, isEditableFieldFocused, onClose, toggleDiffHighlight]);
 
     // Handle translation selection change for a specific slot
     const handleTranslationChange = (index, translationId) => {
@@ -189,7 +450,7 @@ const ComparisonGrid = ({
                         <option value="">{formatMessage({ id: "chooseTranslation" })}...</option>
 
                         {available.filter(t => favoriteTranslations.includes(t.id)).length > 0 && (
-                            <optgroup label={`★ ${formatMessage({ id: "favorites" })}`}>
+                            <optgroup label={`\u2605 ${formatMessage({ id: "favorites" })}`}>
                                 {available
                                     .filter(t => favoriteTranslations.includes(t.id))
                                     .map(t => (
@@ -227,7 +488,7 @@ const ComparisonGrid = ({
                             </div>
                         ) : comparedVerses[selectedId] ? (
                             <p className="comparison-text">
-                                {comparedVerses[selectedId].replaceAll("//", "\n")}
+                                {renderComparisonText(comparedVerses[selectedId], selectedId)}
                             </p>
                         ) : comparedVerses[selectedId] === null ? (
                             <p className="comparison-not-found">
@@ -276,8 +537,16 @@ const ComparisonGrid = ({
                     </div>
 
                     <div className="d-flex align-items-center gap-2">
+                        <button
+                            type="button"
+                            className={`comparison-diff-toggle ${isDiffHighlightEnabled ? "active" : ""}`}
+                            onClick={toggleDiffHighlight}
+                            title={formatMessage({ id: "toggleDifferencesKeyboardHint" })}
+                        >
+                            {formatMessage({ id: isDiffHighlightEnabled ? "hideDifferences" : "showDifferences" })}
+                        </button>
                         <span className="comparison-keyboard-hint d-none d-lg-block">
-                            ← → {formatMessage({ id: "navigateVerses" })}
+                            ← → {formatMessage({ id: "navigateVerses" })} • D {formatMessage({ id: "toggleDifferences" })}
                         </span>
                         <button className="btn btn-close" onClick={onClose}></button>
                     </div>
@@ -295,7 +564,7 @@ const ComparisonGrid = ({
                             </div>
                             {comparedVerses[currentTranslation] ? (
                                 <p className="comparison-text comparison-text-primary">
-                                    {comparedVerses[currentTranslation].replaceAll("//", "\n")}
+                                    {renderComparisonText(comparedVerses[currentTranslation], currentTranslation)}
                                 </p>
                             ) : (
                                 <div className="comparison-loading">
@@ -322,3 +591,4 @@ const ComparisonGrid = ({
 };
 
 export default ComparisonGrid;
+

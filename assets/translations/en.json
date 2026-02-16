@@ -99,5 +99,22 @@
   "loadingMore": "Loading more...",
   "showMore": "Show more",
   "showLess": "Show less",
-  "changelogTitle": "Changelog"
+  "changelogTitle": "Changelog",
+  "recentSearches": "Recent searches",
+  "clear": "Clear",
+  "showDifferences": "Differences",
+  "hideDifferences": "Hide differences",
+  "toggleDifferences": "differences",
+  "toggleDifferencesKeyboardHint": "Press D to toggle difference highlighting",
+  "diffMode": "Comparison mode",
+  "diffModeHint": "Loose — ignores word order. Strict (LCS) — pairwise comparison with base, respects word order.",
+  "diffModeLoose": "Loose",
+  "diffModeStrict": "Strict",
+  "suggestionHistory": "history",
+  "suggestionBook": "book",
+  "suggestionPhrase": "popular",
+  "chapterComparison": "Chapter Comparison",
+  "chapterCompSelectTranslation": "Select translation...",
+  "chapterCompSelectHint": "Select translations to compare from the dropdowns above.",
+  "chapterCompError": "Failed to load chapter."
 }
