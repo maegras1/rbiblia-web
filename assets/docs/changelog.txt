@@ -1,3 +1,5 @@
+UWAGA! Ta wersja nie jest już rozwijana i z czasem zostanie wyłączona. Proszę o korzystanie z nowej wersji dostępnej pod adresem https://rbiblia.app.
+
 Strona domowa projektu:
 https://web.rbiblia.toborek.info
 
